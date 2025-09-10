@@ -10,6 +10,7 @@
 #include "DX12/Debug/DXGIDebug.h"
 
 #include "DX12/Pipeline/HLSLShader.h"
+#include "DX12/Pipeline/D12RootSignature.h"
 
 namespace Engine {
 
@@ -65,10 +66,10 @@ namespace Engine {
 
 
 		HLSLShader testShader;
-
 		testShader.Initialize(L"Shaders/vertex.hlsl", HLSLShader::ShaderType::VERTEX);
 
-
+		D12RootSignature rstest;
+		rstest.Initialize(device.Get());
 
 
 
