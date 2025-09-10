@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Renderer\DX12\Pipeline\HLSLShader.h" />
     <ClInclude Include="src\Renderer\RendererDataTypes.h" />
     <ClInclude Include="src\Renderer\DX12\Resources\D12Resource.h" />
     <ClInclude Include="src\EngineSettings.h" />
@@ -98,6 +99,7 @@
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\DX12\Pipeline\HLSLShader.cpp" />
     <ClCompile Include="src\Renderer\DX12\Resources\D12Resource.cpp" />
     <ClCompile Include="src\Renderer\DX12\DXGI\DXGISwapChain.cpp" />
     <ClCompile Include="src\Renderer\DX12\Commands\D12CmdList.cpp" />

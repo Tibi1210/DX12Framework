@@ -9,6 +9,8 @@
 #include "DX12/Debug/D12Debug.h"
 #include "DX12/Debug/DXGIDebug.h"
 
+#include "DX12/Pipeline/HLSLShader.h"
+
 namespace Engine {
 
 	using namespace Render;
@@ -59,6 +61,23 @@ namespace Engine {
 		dynamicVertexBuffer->Map(0, 0, &dest);
 		memcpy(dest, &vertexData, sizeof(vertexData));
 		dynamicVertexBuffer->Unmap(0, 0);
+
+
+
+		HLSLShader testShader;
+
+		testShader.Initialize(L"Shaders/vertex.hlsl", HLSLShader::ShaderType::VERTEX);
+
+
+
+
+
+
+
+
+
+
+
 	}
 
 	void Renderer::UpdateDraw(){
