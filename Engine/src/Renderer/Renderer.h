@@ -12,6 +12,8 @@
 
 #include "DX12/Resources/D12Resource.h"
 
+#include "DX12/Pipeline/D12PipelineState.h"
+
 namespace Engine {
 
 	class RENDER_API Renderer{
@@ -38,6 +40,12 @@ namespace Engine {
 		DXGISwapChain swapchain;
 
 		D12Resource dynamicVertexBuffer;
+		D3D12_VERTEX_BUFFER_VIEW dynamicVertexBufferView;
+
+		D3D12_VIEWPORT viewport;
+		D3D12_RECT SRRect;
+
+		D12PipelineState basePipeline;
 	};
 }
 

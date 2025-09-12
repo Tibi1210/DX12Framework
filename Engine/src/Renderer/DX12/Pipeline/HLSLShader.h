@@ -16,6 +16,8 @@ namespace Engine {
 
 		void Initialize(const LPCWSTR filename, const ShaderType type);
 
+		inline ID3DBlob* GetByteBlob() { return byteCode; }
+
 		void Release();
 
 	private:
