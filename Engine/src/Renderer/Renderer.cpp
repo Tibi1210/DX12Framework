@@ -24,11 +24,14 @@ namespace Engine {
 	void Renderer::Release() {
 
 		cmdQ.FlushQuene();
+
 		PassDataBuffer.Release();
 		depthHeap.Release();
 		depthBuffer.Release();
 		basePipeline.Release();
-		dynamicVertexBuffer.Release();
+		indexBuffer.Release();
+		vertexBuffer.Release();
+		bufferUploader.Release();
 		swapchain.Release();
 		cmdL.Release();
 		cmdQ.Release();
@@ -43,6 +46,7 @@ namespace Engine {
 
 		rWidth = width;
 		rHeight = height;
+
 		// disable on prod
 		D12Debug::Get().Enable();
 		DXGIDebug::Get().Enable();
@@ -51,61 +55,92 @@ namespace Engine {
 		DXGIAdapter adapter = factory.GetAdapter();
 
 		device.Initialize(adapter.Get());
-
 		cmdQ.Initialize(device.Get());
 		cmdL.Initialize(device.Get());
-		
 		swapchain.Initialize(device.Get(), factory.Get(), cmdQ.Get(), hwnd, rWidth, rHeight);
+		bufferUploader.Initialize(device.Get(), KBs(64));
+		vertexBuffer.Initialize(device.Get(), KBs(8), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+		vertexBuffer.Get()->SetName(L"Vertex buffer");
 
-		dynamicVertexBuffer.Initialize(device.Get(), KBs(16), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-		dynamicVertexBuffer.Get()->SetName(L"Dynamic vertex buffer");
+		#define G_VERTS 8
+		Vertex boxVerts[G_VERTS];
 
-		Vertex boxVerts[18];
-
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			boxVerts[i].color = { 1.0f, 0.0f, 0.0f, 1.0f };
 		}
 
-		boxVerts[0].position = { -1.0f, -1.0f, -1.0f };
-		boxVerts[1].position = { -1.0f, 1.0f, -1.0f };
-		boxVerts[2].position = { 1.0f, -1.0f, -1.0f };
-		boxVerts[3].position = { -1.0f, 1.0f, -1.0f };
-		boxVerts[4].position = { 1.0f, 1.0f, -1.0f };
-		boxVerts[5].position = { 1.0f, -1.0f, -1.0f };
+		boxVerts[0].position = { -1.0f, 1.0f, 1.0f };
+		boxVerts[1].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[2].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[3].position = { -1.0f, -1.0f, -1.0f };
 
-		for (int i = 6; i < 12; i++)
-		{
-			boxVerts[i].color = { 0.0f, 1.0f, 0.0f, 1.0f };
-		}
-
-		boxVerts[6].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[7].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[8].position = { 1.0f, 1.0f, 1.0f };
-		boxVerts[9].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[10].position = { 1.0f, -1.0f, 1.0f };
-		boxVerts[11].position = { 1.0f, 1.0f, 1.0f };
-
-		for (int i = 12; i < 18; i++)
+		for (int i = 4; i < 8; i++)
 		{
 			boxVerts[i].color = { 0.0f, 0.0f, 1.0f, 1.0f };
 		}
 
-		boxVerts[12].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[13].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[14].position = { -1.0f, -1.0f, -1.0f };
+		boxVerts[4].position = { 1.0f, 1.0f, 1.0f }; 
+		boxVerts[5].position = { 1.0f, -1.0f, 1.0f };
+		boxVerts[6].position = { 1.0f, 1.0f, -1.0f };
+		boxVerts[7].position = { 1.0f, -1.0f, -1.0f };
 
-		boxVerts[15].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[16].position = { -1.0f, 1.0f, -1.0f };
-		boxVerts[17].position = { -1.0f, -1.0f, -1.0f };
+		bufferUploader.Upload((D12Resource*)vertexBuffer.GetAddressOf(), boxVerts, sizeof(Vertex) * G_VERTS, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+		vertexBufferView.BufferLocation = vertexBuffer.Get()->GetGPUVirtualAddress();
+		vertexBufferView.StrideInBytes = sizeof(Vertex);
+		vertexBufferView.SizeInBytes = KBs(8);
 
 
+		#define G_INDICES 36
+		UINT32 indicies[G_INDICES];
+		indicies[0] = 0;
+		indicies[1] = 2;
+		indicies[2] = 4;
+		indicies[3] = 2;
+		indicies[4] = 7;
+		indicies[5] = 3;
+		indicies[6] = 7;
+		indicies[7] = 5;
+		indicies[8] = 6;
+		indicies[9] = 1;
+		indicies[10] = 7;
+		indicies[11] = 5;
+		indicies[12] = 0;
+		indicies[13] = 3;
+		indicies[14] = 1;
+		indicies[15] = 4;
+		indicies[16] = 1;
+		indicies[17] = 5;
+		indicies[18] = 4;
+		indicies[19] = 6;
+		indicies[20] = 2;
+		indicies[21] = 2;
+		indicies[22] = 6;
+		indicies[23] = 7;
+		indicies[24] = 6;
+		indicies[25] = 4;
+		indicies[26] = 5;
+		indicies[27] = 1;
+		indicies[28] = 3;
+		indicies[29] = 7;
+		indicies[30] = 0;
+		indicies[31] = 2;
+		indicies[32] = 3;
+		indicies[33] = 4;
+		indicies[34] = 0;
+		indicies[35] = 1;
 
-		memcpy(dynamicVertexBuffer.GetCPUMemory(), boxVerts, sizeof(Vertex) * 18);
-		dynamicVertexBufferView.BufferLocation = dynamicVertexBuffer.Get()->GetGPUVirtualAddress();
-		dynamicVertexBufferView.StrideInBytes = sizeof(Vertex);
-		dynamicVertexBufferView.SizeInBytes = KBs(16);
+		indexBuffer.Initialize(device.Get(), KBs(16), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+		indexBuffer.Get()->SetName(L"Index buffer");
+		
+		bufferUploader.Upload((D12Resource*)indexBuffer.GetAddressOf(), indicies, sizeof(UINT32) * G_INDICES, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 
+		indexBufferView.BufferLocation = indexBuffer.Get()->GetGPUVirtualAddress();
+		indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+		indexBufferView.SizeInBytes = KBs(16);
+
+		
 		basePipeline.Initialize(device.Get());
 		depthBuffer.InitializeDepthBuffer(device.Get(), rWidth, rHeight);
 		depthHeap.InitializeDepthHeap(device.Get());
@@ -171,13 +206,13 @@ namespace Engine {
 		cmdL.GraphicsCmd()->SetGraphicsRootSignature(basePipeline.GetRootSignature());
 		cmdL.GraphicsCmd()->SetPipelineState(basePipeline.Get());
 		cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &dynamicVertexBufferView);
+		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView);
+		cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
 
 		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 		//DRAW
-		cmdL.GraphicsCmd()->DrawInstanced(18, 1, 0, 0);
-
+		cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
 
 		barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;

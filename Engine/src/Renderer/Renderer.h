@@ -16,6 +16,7 @@
 
 #include "DX12/Pipeline/D12PipelineState.h"
 #include "DX12/Descriptors/D12DescriptorHeap.h"
+#include "DX12/MemoryManagement/BufferUploader.h"
 
 namespace Engine {
 
@@ -34,28 +35,29 @@ namespace Engine {
 
 	private:
 
+		UINT rWidth, rHeight = 0;
+		D3D12_VIEWPORT viewport;
+		D3D12_RECT SRRect;
+
+
 		D12Device device;
 		D12CmdQueue cmdQ;
 		D12CmdList cmdL;
-
-		UINT rWidth, rHeight = 0;
-
 		DXGISwapChain swapchain;
+		BufferUploader bufferUploader;
 
-		D12Resource dynamicVertexBuffer;
-		D3D12_VERTEX_BUFFER_VIEW dynamicVertexBufferView;
-
-		D12Resource PassDataBuffer;
-
-		D3D12_VIEWPORT viewport;
-		D3D12_RECT SRRect;
+		D12Resource vertexBuffer;
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+		D12Resource indexBuffer;
+		D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
 		D12PipelineState basePipeline;
 		D12Resource depthBuffer;
 		D12DescriptorHeap depthHeap;
+		D12Resource PassDataBuffer;
+
 
 		DirectX::XMMATRIX viewProjMatrix;
-
 
 	};
 }

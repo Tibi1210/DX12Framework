@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Renderer\DX12\MemoryManagement\BufferUploader.h" />
     <ClInclude Include="src\Renderer\DX12\Descriptors\D12DescriptorHeap.h" />
     <ClInclude Include="src\Renderer\DX12\Pipeline\D12PipelineState.h" />
     <ClInclude Include="src\Renderer\DX12\Pipeline\D12RootSignature.h" />
@@ -103,6 +104,7 @@
     <ClInclude Include="src\Renderer\DX12\Utilities\Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\DX12\MemoryManagement\BufferUploader.cpp" />
     <ClCompile Include="src\Renderer\DX12\Descriptors\D12DescriptorHeap.cpp" />
     <ClCompile Include="src\Renderer\DX12\Pipeline\D12PipelineState.cpp" />
     <ClCompile Include="src\Renderer\DX12\Pipeline\D12RootSignature.cpp" />

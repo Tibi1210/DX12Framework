@@ -41,8 +41,6 @@ namespace Engine {
 		psDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
 		psDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 
-
-
 		D3D12_INPUT_ELEMENT_DESC elements[2] = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
@@ -59,13 +57,6 @@ namespace Engine {
 		psDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
 		psDesc.NodeMask = 0;
 		psDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-
-
-
-
-
-		
-
 
 		EVAL_HRES(pDevice->CreateGraphicsPipelineState(&psDesc, IID_PPV_ARGS(&ptr_)), "Error creating graphics pipeline state.");
 
