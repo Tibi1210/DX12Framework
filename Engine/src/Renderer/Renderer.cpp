@@ -11,6 +11,8 @@
 #include "DX12/Debug/D12Debug.h"
 #include "DX12/Debug/DXGIDebug.h"
 
+#include "DX12/Utilities/Utilities.h"
+
 namespace Engine {
 
 	using namespace Render;
@@ -22,6 +24,9 @@ namespace Engine {
 	void Renderer::Release() {
 
 		cmdQ.FlushQuene();
+		PassDataBuffer.Release();
+		depthHeap.Release();
+		depthBuffer.Release();
 		basePipeline.Release();
 		dynamicVertexBuffer.Release();
 		swapchain.Release();
@@ -55,44 +60,62 @@ namespace Engine {
 		dynamicVertexBuffer.Initialize(device.Get(), KBs(16), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 		dynamicVertexBuffer.Get()->SetName(L"Dynamic vertex buffer");
 
+		Vertex boxVerts[18];
 
-		std::vector<Vertex> vertices;
-		for (int i = 0; i < 3; i++){
-
-			Vertex vertexData;
-
-			if (i==0){
-
-				vertexData.color = { 1.0f, 0.0f, 0.0f, 1.0f };
-				vertexData.position = { -0.5f, -0.5f, 0.0f }; // SS_coords (0, 0) center
-
-			}else if(i==1){
-
-				vertexData.color = { 0.0f, 1.0f, 0.0f, 1.0f };
-				vertexData.position = { 0.0f, 0.5f, 0.0f };
-
-			}else{
-
-				vertexData.color = { 0.0f, 0.0f, 1.0f, 1.0f };
-				vertexData.position = { 0.5f, -0.5f, 0.0f };
-
-			}
-			vertices.push_back(vertexData);
+		for (int i = 0; i < 6; i++)
+		{
+			boxVerts[i].color = { 1.0f, 0.0f, 0.0f, 1.0f };
 		}
 
+		boxVerts[0].position = { -1.0f, -1.0f, -1.0f };
+		boxVerts[1].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[2].position = { 1.0f, -1.0f, -1.0f };
+		boxVerts[3].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[4].position = { 1.0f, 1.0f, -1.0f };
+		boxVerts[5].position = { 1.0f, -1.0f, -1.0f };
 
-		void* dest = nullptr;
-		dynamicVertexBuffer->Map(0, 0, &dest);
-		//memcpy(dest, &vertexData, sizeof(Vertex));
-		memcpy(dest, vertices.data(), sizeof(Vertex) * vertices.size());
-		dynamicVertexBuffer->Unmap(0, 0);
+		for (int i = 6; i < 12; i++)
+		{
+			boxVerts[i].color = { 0.0f, 1.0f, 0.0f, 1.0f };
+		}
+
+		boxVerts[6].position = { -1.0f, 1.0f, 1.0f };
+		boxVerts[7].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[8].position = { 1.0f, 1.0f, 1.0f };
+		boxVerts[9].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[10].position = { 1.0f, -1.0f, 1.0f };
+		boxVerts[11].position = { 1.0f, 1.0f, 1.0f };
+
+		for (int i = 12; i < 18; i++)
+		{
+			boxVerts[i].color = { 0.0f, 0.0f, 1.0f, 1.0f };
+		}
+
+		boxVerts[12].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[13].position = { -1.0f, 1.0f, 1.0f };
+		boxVerts[14].position = { -1.0f, -1.0f, -1.0f };
+
+		boxVerts[15].position = { -1.0f, 1.0f, 1.0f };
+		boxVerts[16].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[17].position = { -1.0f, -1.0f, -1.0f };
+
+
+
+		memcpy(dynamicVertexBuffer.GetCPUMemory(), boxVerts, sizeof(Vertex) * 18);
 		dynamicVertexBufferView.BufferLocation = dynamicVertexBuffer.Get()->GetGPUVirtualAddress();
 		dynamicVertexBufferView.StrideInBytes = sizeof(Vertex);
 		dynamicVertexBufferView.SizeInBytes = KBs(16);
 
-
-
 		basePipeline.Initialize(device.Get());
+		depthBuffer.InitializeDepthBuffer(device.Get(), rWidth, rHeight);
+		depthHeap.InitializeDepthHeap(device.Get());
+
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsvDesc.Texture2D.MipSlice = 0;
+		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+		device->CreateDepthStencilView(depthBuffer.Get(), &dsvDesc, depthHeap.Get()->GetCPUDescriptorHandleForHeapStart());
 
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
@@ -106,11 +129,24 @@ namespace Engine {
 		SRRect.top = 0;
 		SRRect.bottom = viewport.Height;
 
+		DirectX::XMMATRIX viewMatrix;
+		DirectX::XMMATRIX projectionMatrix;
+
+		viewMatrix = DirectX::XMMatrixLookAtLH({ -3.0f, 3.0f,-3.0f, 0.0f}, // camera pos
+											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
+											   { 0.0f, 1.0f, 0.0f, 0.0f });
+		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f/9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far
+		viewProjMatrix = viewMatrix * projectionMatrix;
+
+		PassDataBuffer.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(PassData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+
 
 
 	}
 
 	void Renderer::UpdateDraw(){
+
+		memcpy(PassDataBuffer.GetCPUMemory(), &viewProjMatrix, sizeof(PassData));
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -123,8 +159,11 @@ namespace Engine {
 
 		const float clearColor[] = {0.0f, 0.0f, 0.0f, 1.0f};
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = swapchain.GetCurrentRTVHandle();
+		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = depthHeap->GetCPUDescriptorHandleForHeapStart();
+		
 		cmdL.GraphicsCmd()->ClearRenderTargetView(rtvHandle, clearColor, 0 ,0);
-		cmdL.GraphicsCmd()->OMSetRenderTargets(1, &rtvHandle, false, 0);
+		cmdL.GraphicsCmd()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0,0);
+		cmdL.GraphicsCmd()->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
 		cmdL.GraphicsCmd()->RSSetViewports(1, &viewport);
 		cmdL.GraphicsCmd()->RSSetScissorRects(1, &SRRect);
@@ -134,8 +173,10 @@ namespace Engine {
 		cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &dynamicVertexBufferView);
 
+		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
+
 		//DRAW
-		cmdL.GraphicsCmd()->DrawInstanced(3, 1, 0, 0);
+		cmdL.GraphicsCmd()->DrawInstanced(18, 1, 0, 0);
 
 
 		barrier = {};

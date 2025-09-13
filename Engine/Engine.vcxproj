@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Renderer\DX12\Descriptors\D12DescriptorHeap.h" />
     <ClInclude Include="src\Renderer\DX12\Pipeline\D12PipelineState.h" />
     <ClInclude Include="src\Renderer\DX12\Pipeline\D12RootSignature.h" />
     <ClInclude Include="src\Renderer\DX12\Pipeline\HLSLShader.h" />
@@ -99,8 +100,10 @@
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\EngineBase.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\Renderer\DX12\Utilities\Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\DX12\Descriptors\D12DescriptorHeap.cpp" />
     <ClCompile Include="src\Renderer\DX12\Pipeline\D12PipelineState.cpp" />
     <ClCompile Include="src\Renderer\DX12\Pipeline\D12RootSignature.cpp" />
     <ClCompile Include="src\Renderer\DX12\Pipeline\HLSLShader.cpp" />
@@ -119,6 +122,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Renderer\DX12\Utilities\Utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

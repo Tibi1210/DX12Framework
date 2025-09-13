@@ -31,12 +31,16 @@ namespace Engine {
 
 		psDesc.RasterizerState = {};
 		psDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-		psDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+		psDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; //back!!!
 		psDesc.RasterizerState.FrontCounterClockwise = false;
 		psDesc.RasterizerState.DepthClipEnable = true;
 		psDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 		
-		psDesc.DepthStencilState = {};
+		psDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+		psDesc.DepthStencilState.DepthEnable = true;
+		psDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+		psDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+
 
 
 		D3D12_INPUT_ELEMENT_DESC elements[2] = {

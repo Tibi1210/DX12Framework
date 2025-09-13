@@ -3,6 +3,8 @@
 #include "EngineBase.h"
 #include <Windows.h>
 
+#include<DirectXMath.h>
+
 #include "DX12/DXGI/DXGISwapChain.h"
 
 #include "DX12/Commands/D12CmdQueue.h"
@@ -13,6 +15,7 @@
 #include "DX12/Resources/D12Resource.h"
 
 #include "DX12/Pipeline/D12PipelineState.h"
+#include "DX12/Descriptors/D12DescriptorHeap.h"
 
 namespace Engine {
 
@@ -42,10 +45,18 @@ namespace Engine {
 		D12Resource dynamicVertexBuffer;
 		D3D12_VERTEX_BUFFER_VIEW dynamicVertexBufferView;
 
+		D12Resource PassDataBuffer;
+
 		D3D12_VIEWPORT viewport;
 		D3D12_RECT SRRect;
 
 		D12PipelineState basePipeline;
+		D12Resource depthBuffer;
+		D12DescriptorHeap depthHeap;
+
+		DirectX::XMMATRIX viewProjMatrix;
+
+
 	};
 }
 
