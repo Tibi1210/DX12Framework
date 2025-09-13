@@ -3,8 +3,6 @@
 
 #include <vector>
 
-#include "RendererDataTypes.h"
-
 #include "DX12/DXGI/DXGIFactory.h"
 #include "DX12/DXGI/DXGIAdapter.h"
 
@@ -25,6 +23,9 @@ namespace Engine {
 
 		cmdQ.FlushQuene();
 
+
+
+		materialBuffer1.Release();
 		PassDataBuffer.Release();
 		depthHeap.Release();
 		depthBuffer.Release();
@@ -62,28 +63,80 @@ namespace Engine {
 		vertexBuffer.Initialize(device.Get(), KBs(8), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 		vertexBuffer.Get()->SetName(L"Vertex buffer");
 
-		#define G_VERTS 8
+		#define G_VERTS 24
 		Vertex boxVerts[G_VERTS];
 
-		for (int i = 0; i < 4; i++)
-		{
-			boxVerts[i].color = { 1.0f, 0.0f, 0.0f, 1.0f };
-		}
-
 		boxVerts[0].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[1].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[2].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[0].normal = { 0.0f, 1.0f, 0.0f };
+
+		boxVerts[1].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[1].normal = { 0.0f, 1.0f, 0.0f };
+
+		boxVerts[2].position = { 1.0f, 1.0f, 1.0f };
+		boxVerts[2].normal = { 0.0f, 1.0f, 0.0f };
+
 		boxVerts[3].position = { -1.0f, -1.0f, -1.0f };
+		boxVerts[3].normal = { 0.0f, 0.0f, -1.0f };
 
-		for (int i = 4; i < 8; i++)
-		{
-			boxVerts[i].color = { 0.0f, 0.0f, 1.0f, 1.0f };
-		}
+		boxVerts[4].position = { 1.0f, -1.0f, -1.0f };
+		boxVerts[4].normal = { 0.0f, 0.0f, -1.0f };
 
-		boxVerts[4].position = { 1.0f, 1.0f, 1.0f }; 
-		boxVerts[5].position = { 1.0f, -1.0f, 1.0f };
-		boxVerts[6].position = { 1.0f, 1.0f, -1.0f };
-		boxVerts[7].position = { 1.0f, -1.0f, -1.0f };
+		boxVerts[5].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[5].normal = { 0.0f, 0.0f, -1.0f };
+
+		boxVerts[6].position = { 1.0f, -1.0f, -1.0f };
+		boxVerts[6].normal = { 1.0f, 0.0f, 0.0f };
+
+		boxVerts[7].position = { 1.0f, -1.0f, 1.00000 };
+		boxVerts[7].normal = { 1.0f, 0.0f ,0.0f };
+
+		boxVerts[8].position = { 1.0f, 1.0f, -1.0f };
+		boxVerts[8].normal = { 1.0f, 0.0f, 0.0f };
+
+		boxVerts[9].position = { 1.0f, -1.0f, 1.0f };
+		boxVerts[9].normal = { 0.0f, -1.0f, 0.0f };
+
+		boxVerts[10].position = { 1.0f, -1.0f, -1.0f };
+		boxVerts[10].normal = { 0.0f, -1.0f, 0.0f };
+
+		boxVerts[11].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[11].normal = { 0.0f, -1.0f, 0.0f };
+
+		boxVerts[12].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[12].normal = { -1.0f, 0.0f ,0.0f };
+
+		boxVerts[13].position = { -1.0f, -1.0f, -1.0f };
+		boxVerts[13].normal = { -1.0f, 0.0f, 0.0f };
+
+		boxVerts[14].position = { -1.0f, 1.0f, 1.0f };
+		boxVerts[14].normal = { -1.0f, 0.0f, 0.0f };
+
+		boxVerts[15].position = { 1.0f, -1.0f, 1.00000 };
+		boxVerts[15].normal = { 0.0f, 0.0f ,1.0f };
+
+		boxVerts[16].position = { -1.0f, -1.0f, 1.0f };
+		boxVerts[16].normal = { 0.0f, 0.0f, 1.0f };
+
+		boxVerts[17].position = { 1.0f, 1.0f, 1.0f };
+		boxVerts[17].normal = { 0.0f, 0.0f, 1.0f };
+
+		boxVerts[18].position = { 1.0f, 1.0f, -1.0f };
+		boxVerts[18].normal = { 0.0f, 1.0f, 0.0f };
+
+		boxVerts[19].position = { 1.0f, 1.0f, -1.0f };
+		boxVerts[19].normal = { 0.0f, 0.0f ,-1.0f };
+
+		boxVerts[20].position = { 1.0f, 1.0f, 1.0f };
+		boxVerts[20].normal = { 1.0f, 0.0f, 0.0f };
+
+		boxVerts[21].position = { -1.0f, -1.0f, -1.0f };
+		boxVerts[21].normal = { 0.0f ,-1.0f, 0.0f };
+
+		boxVerts[22].position = { -1.0f, 1.0f, -1.0f };
+		boxVerts[22].normal = { -1.0f, 0.0f, 0.0f };
+
+		boxVerts[23].position = { -1.0f, 1.0f, 1.0f };
+		boxVerts[23].normal = { 0.0f, 0.0f, 1.0f };
 
 		bufferUploader.Upload((D12Resource*)vertexBuffer.GetAddressOf(), boxVerts, sizeof(Vertex) * G_VERTS, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
@@ -95,41 +148,48 @@ namespace Engine {
 		#define G_INDICES 36
 		UINT32 indicies[G_INDICES];
 		indicies[0] = 0;
-		indicies[1] = 2;
-		indicies[2] = 4;
-		indicies[3] = 2;
-		indicies[4] = 7;
-		indicies[5] = 3;
-		indicies[6] = 7;
-		indicies[7] = 5;
-		indicies[8] = 6;
-		indicies[9] = 1;
-		indicies[10] = 7;
-		indicies[11] = 5;
-		indicies[12] = 0;
-		indicies[13] = 3;
-		indicies[14] = 1;
-		indicies[15] = 4;
-		indicies[16] = 1;
-		indicies[17] = 5;
-		indicies[18] = 4;
-		indicies[19] = 6;
+		indicies[1] = 1;
+		indicies[2] = 2;
+		indicies[3] = 3;
+		indicies[4] = 4;
+		indicies[5] = 5;
+		indicies[6] = 6;
+		indicies[7] = 7;
+		indicies[8] = 8;
+		indicies[9] = 9;
+		indicies[10] = 10;
+		indicies[11] = 11;
+		indicies[12] = 12;
+		indicies[13] = 13;
+		indicies[14] = 14;
+		indicies[15] = 15;
+		indicies[16] = 16;
+		indicies[17] = 17;
+		indicies[18] = 1;
+		indicies[19] = 18;
 		indicies[20] = 2;
-		indicies[21] = 2;
-		indicies[22] = 6;
-		indicies[23] = 7;
-		indicies[24] = 6;
-		indicies[25] = 4;
-		indicies[26] = 5;
-		indicies[27] = 1;
-		indicies[28] = 3;
-		indicies[29] = 7;
-		indicies[30] = 0;
-		indicies[31] = 2;
-		indicies[32] = 3;
-		indicies[33] = 4;
-		indicies[34] = 0;
-		indicies[35] = 1;
+		indicies[21] = 4;
+		indicies[22] = 19;
+		indicies[23] = 5;
+		indicies[24] = 7;
+		indicies[25] = 20;
+		indicies[26] = 8;
+		indicies[27] = 10;
+		indicies[28] = 21;
+		indicies[29] = 11;
+		indicies[30] = 13;
+		indicies[31] = 22;
+		indicies[32] = 14;
+		indicies[33] = 16;
+		indicies[34] = 23;
+		indicies[35] = 17;
+
+		for (int i = 0; i < 18; i++)
+		{
+			int temp = indicies[i];
+			indicies[i] = indicies[35 - i];
+			indicies[35 - i] = temp;
+		}
 
 		indexBuffer.Initialize(device.Get(), KBs(16), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 		indexBuffer.Get()->SetName(L"Index buffer");
@@ -167,21 +227,32 @@ namespace Engine {
 		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX projectionMatrix;
 
-		viewMatrix = DirectX::XMMatrixLookAtLH({ -3.0f, 3.0f,-3.0f, 0.0f}, // camera pos
+		viewMatrix = DirectX::XMMatrixLookAtLH({ 2.0f, 2.0f, -2.0f, 0.0f}, // camera pos
 											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
 											   { 0.0f, 1.0f, 0.0f, 0.0f });
 		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f/9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far
 		viewProjMatrix = viewMatrix * projectionMatrix;
 
 		PassDataBuffer.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(PassData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+		PassDataBuffer.Get()->SetName(L"PassData buffer");
 
+		Material material;
+		material.albedo = { 0.8f, 0.0f, 0.0f, 1.0f };
+		materialBuffer1.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+		materialBuffer1.Get()->SetName(L"Material buffer");
+		bufferUploader.Upload((D12Resource*)materialBuffer1.GetAddressOf(), &material, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		
 
+		lights[0].position = { 0.0f, 0.0f, 0.0f };
+		lights[0].strength = 0.5f;
+		lights[0].direction = { -0.5f, -1.0f, 0.0f };
 
 	}
 
 	void Renderer::UpdateDraw(){
 
-		memcpy(PassDataBuffer.GetCPUMemory(), &viewProjMatrix, sizeof(PassData));
+		memcpy(PassDataBuffer.GetCPUMemory(), &viewProjMatrix, sizeof(PassData::viewprojmatrix));
+		memcpy((BYTE*)PassDataBuffer.GetCPUMemory()+sizeof(PassData::viewprojmatrix), &lights[0], sizeof(Light));
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -210,6 +281,7 @@ namespace Engine {
 		cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
 
 		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
+		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, materialBuffer1.Get()->GetGPUVirtualAddress());
 
 		//DRAW
 		cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);

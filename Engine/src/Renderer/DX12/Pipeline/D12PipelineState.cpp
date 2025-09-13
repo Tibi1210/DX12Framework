@@ -31,7 +31,7 @@ namespace Engine {
 
 		psDesc.RasterizerState = {};
 		psDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-		psDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE; //back!!!
+		psDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK; //back!!!
 		psDesc.RasterizerState.FrontCounterClockwise = false;
 		psDesc.RasterizerState.DepthClipEnable = true;
 		psDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
@@ -43,7 +43,9 @@ namespace Engine {
 
 		D3D12_INPUT_ELEMENT_DESC elements[2] = {
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+			{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+
+			//{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 		};
 
 		D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};

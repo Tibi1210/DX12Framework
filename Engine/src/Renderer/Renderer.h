@@ -5,6 +5,8 @@
 
 #include<DirectXMath.h>
 
+#include "RendererDataTypes.h"
+
 #include "DX12/DXGI/DXGISwapChain.h"
 
 #include "DX12/Commands/D12CmdQueue.h"
@@ -51,13 +53,18 @@ namespace Engine {
 		D12Resource indexBuffer;
 		D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
+		D12Resource materialBuffer1;
+
 		D12PipelineState basePipeline;
 		D12Resource depthBuffer;
 		D12DescriptorHeap depthHeap;
 		D12Resource PassDataBuffer;
 
+		Render::Light lights[8];
 
 		DirectX::XMMATRIX viewProjMatrix;
+
+
 
 	};
 }
