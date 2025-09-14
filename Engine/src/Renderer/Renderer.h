@@ -3,6 +3,8 @@
 #include "EngineBase.h"
 #include <Windows.h>
 
+#include <vector>
+
 #include<DirectXMath.h>
 
 #include "RendererDataTypes.h"
@@ -53,16 +55,19 @@ namespace Engine {
 		D12Resource indexBuffer;
 		D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
-		D12Resource materialBuffer1;
+		std::vector<D12Resource> materialBuffers;
 
 		D12PipelineState basePipeline;
 		D12Resource depthBuffer;
 		D12DescriptorHeap depthHeap;
 		D12Resource PassDataBuffer;
 
+		DirectX::XMMATRIX viewProjMatrix;
+
 		Render::Light lights[8];
 
-		DirectX::XMMATRIX viewProjMatrix;
+		std::vector<D12Resource> objectTransforms;
+
 
 
 

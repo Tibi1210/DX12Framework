@@ -27,7 +27,7 @@ struct PassData{
 };
 
 ConstantBuffer<PassData> globalPassData : register(b0);
-ConstantBuffer<MaterialData> globalMaterialData : register(b1);
+ConstantBuffer<MaterialData> globalMaterialData : register(b2);
 
 
 float4 main(PS_INPUT input): SV_Target{

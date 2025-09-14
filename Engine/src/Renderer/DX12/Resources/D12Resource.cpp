@@ -73,6 +73,7 @@ namespace Engine {
 	void D12Resource::Release() {
 		if (memory && Get()){
 			Get()->Unmap(0, 0);
+			memory = nullptr;
 		}
 		if (Get()){
 			Reset();

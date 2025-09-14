@@ -3,7 +3,6 @@
 struct VS_INPUT{
     float3 position : POSITION;
     float3 normal : NORMAL;
-    //float4 color : COLOR;
 };
 
 
@@ -29,14 +28,22 @@ struct PassData{
 };
 ConstantBuffer<PassData> globalPassData : register(b0);
 
+struct ObjectData{
+    float4x4 transform;
+    
+};
+ConstantBuffer<ObjectData> globalObjectData : register(b1);
+
 
 VS_OUTPUT main(VS_INPUT input){
     
     VS_OUTPUT output;
     
-    output.position = mul(globalPassData.MATRIX_VP, float4(input.position, 1.0f));
+    float4 positionWS = mul(globalObjectData.transform, float4(input.position, 1.0f));
+    
+    output.position = mul(globalPassData.MATRIX_VP, positionWS);
     output.normalSS = mul(globalPassData.MATRIX_VP, float4(input.normal, 1.0f)).rgb;
-    output.normalWS = input.normal;
+    output.normalWS = mul(globalObjectData.transform, float4(input.normal, 1.0f)).rgb;
     return output;
 }
 

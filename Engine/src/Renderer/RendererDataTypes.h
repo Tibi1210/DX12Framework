@@ -34,6 +34,12 @@ namespace Engine {
 			Light sceneLight;
 		};
 
+		struct ObjectData {
+
+			DirectX::XMMATRIX transform = DirectX::XMMatrixIdentity();
+
+		};
+
 	}
 
  }

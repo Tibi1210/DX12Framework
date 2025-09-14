@@ -11,21 +11,29 @@ namespace Engine {
 
 	void D12RootSignature::Initialize(ID3D12Device* pDevice){
 
-		D3D12_ROOT_PARAMETER rootParams[2];
+		D3D12_ROOT_PARAMETER rootParams[3];
+		//pass data
 		rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		rootParams[0].Descriptor.ShaderRegister = 0;
 		rootParams[0].Descriptor.RegisterSpace = 0;
 		rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+		//transforms
 		rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 		rootParams[1].Descriptor.ShaderRegister = 1;
 		rootParams[1].Descriptor.RegisterSpace = 0;
-		rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+		rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+		//material
+		rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		rootParams[2].Descriptor.ShaderRegister = 2;
+		rootParams[2].Descriptor.RegisterSpace = 0;
+		rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 		D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc = {};
 		rsDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_0;
 		rsDesc.Desc_1_0.pParameters = rootParams;
-		rsDesc.Desc_1_0.NumParameters = 2;
+		rsDesc.Desc_1_0.NumParameters = 3;
 		rsDesc.Desc_1_0.NumStaticSamplers = 0;
 		rsDesc.Desc_1_0.pStaticSamplers = 0;
 		rsDesc.Desc_1_0.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
 
-#include <vector>
-
 #include "DX12/DXGI/DXGIFactory.h"
 #include "DX12/DXGI/DXGIAdapter.h"
 
@@ -24,8 +22,14 @@ namespace Engine {
 		cmdQ.FlushQuene();
 
 
-
-		materialBuffer1.Release();
+		for (int i = 0; i < objectTransforms.size(); i++)
+		{
+			objectTransforms[i].Release();
+		}
+		for (int i = 0; i < materialBuffers.size(); i++)
+		{
+			materialBuffers[i].Release();
+		}
 		PassDataBuffer.Release();
 		depthHeap.Release();
 		depthBuffer.Release();
@@ -227,7 +231,7 @@ namespace Engine {
 		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX projectionMatrix;
 
-		viewMatrix = DirectX::XMMatrixLookAtLH({ 2.0f, 2.0f, -2.0f, 0.0f}, // camera pos
+		viewMatrix = DirectX::XMMatrixLookAtLH({ 3.0f, 5.0f, -5.0f, 0.0f}, // camera pos
 											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
 											   { 0.0f, 1.0f, 0.0f, 0.0f });
 		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f/9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far
@@ -236,16 +240,71 @@ namespace Engine {
 		PassDataBuffer.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(PassData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 		PassDataBuffer.Get()->SetName(L"PassData buffer");
 
-		Material material;
-		material.albedo = { 0.8f, 0.0f, 0.0f, 1.0f };
-		materialBuffer1.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-		materialBuffer1.Get()->SetName(L"Material buffer");
-		bufferUploader.Upload((D12Resource*)materialBuffer1.GetAddressOf(), &material, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+
+		{
+			materialBuffers.emplace_back(D12Resource());
+			Material material1;
+			material1.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
+			materialBuffers[0].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+			materialBuffers[0]->SetName(L"Material buffer 1");
+			bufferUploader.Upload((D12Resource*)materialBuffers[0].GetAddressOf(), &material1, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+
+			materialBuffers.emplace_back(D12Resource());
+			Material material2;
+			material2.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
+			materialBuffers[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+			materialBuffers[1]->SetName(L"Material buffer 2");
+			bufferUploader.Upload((D12Resource*)materialBuffers[1].GetAddressOf(), &material2, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		
+			materialBuffers.emplace_back(D12Resource());
+			Material material3;
+			material2.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
+			materialBuffers[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+			materialBuffers[2]->SetName(L"Material buffer 3");
+			bufferUploader.Upload((D12Resource*)materialBuffers[2].GetAddressOf(), &material2, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		
+		}
 
 		lights[0].position = { 0.0f, 0.0f, 0.0f };
 		lights[0].strength = 0.5f;
-		lights[0].direction = { -0.5f, -1.0f, 0.0f };
+		lights[0].direction = { 0.0f, -0.7f, 0.0f };
+
+		{
+			objectTransforms.reserve(3);
+
+			ObjectData objdata1;
+			objdata1.transform.r[0] = { 1.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			objdata1.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
+			objdata1.transform.r[2] = { 0.0f, 0.0f, 1.0f, 0.0f }; // z scale
+			objdata1.transform.r[3] = { 0.0f, 2.0f, -2.0f, 1.0f }; // xyz pos
+			objectTransforms.emplace_back(D12Resource());
+			objectTransforms[0].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+			objectTransforms[0]->SetName(L"Object transform 1");
+			memcpy(objectTransforms[0].GetCPUMemory(), &objdata1, sizeof(ObjectData));
+
+			ObjectData objdata2;
+			objdata2.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			objdata2.transform.r[1] = { 0.0f, 1.0f, 0.0f, 0.0f }; // y scale
+			objdata2.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
+			objdata2.transform.r[3] = { 3.0f, 3.0f, 5.0f, 1.0f }; // xyz pos
+			objectTransforms.emplace_back(D12Resource());
+			objectTransforms[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+			objectTransforms[1]->SetName(L"Object transform 2");
+			memcpy(objectTransforms[1].GetCPUMemory(), &objdata2, sizeof(ObjectData));
+
+			ObjectData objdata3;
+			objdata3.transform.r[0] = { 20.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			objdata3.transform.r[1] = { 0.0f, 0.1f, 0.0f, 0.0f }; // y scale
+			objdata3.transform.r[2] = { 0.0f, 0.0f, 20.0f, 0.0f }; // z scale
+			objdata3.transform.r[3] = { 0.0f, 0.0f, 0.0f, 1.0f }; // xyz pos
+			objectTransforms.emplace_back(D12Resource());
+			objectTransforms[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+			objectTransforms[2]->SetName(L"Object transform 3");
+			memcpy(objectTransforms[2].GetCPUMemory(), &objdata3, sizeof(ObjectData));
+		}
+
+
+
 
 	}
 
@@ -280,11 +339,27 @@ namespace Engine {
 		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
 
-		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
-		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, materialBuffer1.Get()->GetGPUVirtualAddress());
+		{
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[0]->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[0].Get()->GetGPUVirtualAddress());
 
-		//DRAW
-		cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+		}
+		{
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[1]->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[1].Get()->GetGPUVirtualAddress());
+
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+		}
+		{
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[2]->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[2].Get()->GetGPUVirtualAddress());
+
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+		}
 
 		barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
