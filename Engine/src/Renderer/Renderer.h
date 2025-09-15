@@ -58,6 +58,7 @@ namespace Engine {
 		std::vector<D12Resource> materialBuffers;
 
 		D12PipelineState basePipeline;
+		D12PipelineState shadowPipeline;
 		D12Resource depthBuffer;
 		D12DescriptorHeap depthHeap;
 		D12Resource PassDataBuffer;

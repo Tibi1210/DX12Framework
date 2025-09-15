@@ -15,6 +15,8 @@ namespace Engine {
 
 		void Initialize(ID3D12Device* pDevice);
 
+		void InitializeAsTransparent(ID3D12Device* pDevice);
+
 		inline ID3D12RootSignature* GetRootSignature() { return rootSignature.Get(); };
 
 		void Release();

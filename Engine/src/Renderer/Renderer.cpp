@@ -33,6 +33,7 @@ namespace Engine {
 		PassDataBuffer.Release();
 		depthHeap.Release();
 		depthBuffer.Release();
+		shadowPipeline.Release();
 		basePipeline.Release();
 		indexBuffer.Release();
 		vertexBuffer.Release();
@@ -188,13 +189,6 @@ namespace Engine {
 		indicies[34] = 23;
 		indicies[35] = 17;
 
-		for (int i = 0; i < 18; i++)
-		{
-			int temp = indicies[i];
-			indicies[i] = indicies[35 - i];
-			indicies[35 - i] = temp;
-		}
-
 		indexBuffer.Initialize(device.Get(), KBs(16), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 		indexBuffer.Get()->SetName(L"Index buffer");
 		
@@ -206,11 +200,12 @@ namespace Engine {
 
 		
 		basePipeline.Initialize(device.Get());
+		shadowPipeline.InitializeAsTransparent(device.Get());
 		depthBuffer.InitializeDepthBuffer(device.Get(), rWidth, rHeight);
 		depthHeap.InitializeDepthHeap(device.Get());
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+		dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		dsvDesc.Texture2D.MipSlice = 0;
 		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
@@ -231,7 +226,7 @@ namespace Engine {
 		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX projectionMatrix;
 
-		viewMatrix = DirectX::XMMatrixLookAtLH({ 3.0f, 5.0f, -5.0f, 0.0f}, // camera pos
+		viewMatrix = DirectX::XMMatrixLookAtLH({ 6.0f, 6.0f, -6.0f, 0.0f}, // camera pos
 											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
 											   { 0.0f, 1.0f, 0.0f, 0.0f });
 		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f/9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far
@@ -267,11 +262,9 @@ namespace Engine {
 
 		lights[0].position = { 0.0f, 0.0f, 0.0f };
 		lights[0].strength = 0.5f;
-		lights[0].direction = { 0.0f, -0.7f, 0.0f };
+		lights[0].direction = { -1.0f, -1.0f, 0.0f };
 
 		{
-			objectTransforms.reserve(3);
-
 			ObjectData objdata1;
 			objdata1.transform.r[0] = { 1.0f, 0.0f, 0.0f, 0.0f }; // x scale
 			objdata1.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
@@ -286,16 +279,16 @@ namespace Engine {
 			objdata2.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
 			objdata2.transform.r[1] = { 0.0f, 1.0f, 0.0f, 0.0f }; // y scale
 			objdata2.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
-			objdata2.transform.r[3] = { 3.0f, 3.0f, 5.0f, 1.0f }; // xyz pos
+			objdata2.transform.r[3] = { 2.0f, 3.0f, 5.0f, 1.0f }; // xyz pos
 			objectTransforms.emplace_back(D12Resource());
 			objectTransforms[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 			objectTransforms[1]->SetName(L"Object transform 2");
 			memcpy(objectTransforms[1].GetCPUMemory(), &objdata2, sizeof(ObjectData));
 
 			ObjectData objdata3;
-			objdata3.transform.r[0] = { 20.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			objdata3.transform.r[0] = { 50.0f, 0.0f, 0.0f, 0.0f }; // x scale
 			objdata3.transform.r[1] = { 0.0f, 0.1f, 0.0f, 0.0f }; // y scale
-			objdata3.transform.r[2] = { 0.0f, 0.0f, 20.0f, 0.0f }; // z scale
+			objdata3.transform.r[2] = { 0.0f, 0.0f, 50.0f, 0.0f }; // z scale
 			objdata3.transform.r[3] = { 0.0f, 0.0f, 0.0f, 1.0f }; // xyz pos
 			objectTransforms.emplace_back(D12Resource());
 			objectTransforms[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -327,7 +320,7 @@ namespace Engine {
 		D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = depthHeap->GetCPUDescriptorHandleForHeapStart();
 		
 		cmdL.GraphicsCmd()->ClearRenderTargetView(rtvHandle, clearColor, 0 ,0);
-		cmdL.GraphicsCmd()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0,0);
+		cmdL.GraphicsCmd()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0,0);
 		cmdL.GraphicsCmd()->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
 		cmdL.GraphicsCmd()->RSSetViewports(1, &viewport);
