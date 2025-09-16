@@ -32,7 +32,7 @@ ConstantBuffer<MaterialData> globalMaterialData : register(b2);
 
 float4 main(PS_INPUT input): SV_Target{
     
-    float3 lightDir = globalPassData.light.direction * -1;
+    float3 lightDir = normalize(globalPassData.light.direction) * -1;
     float LdotN = dot(lightDir, input.normalWS);
 
     return globalMaterialData.albedo * clamp(LdotN * globalPassData.light.strength, 0.01f, 1.0f);

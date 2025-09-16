@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Renderer.h"
 
+#include <string>
+
 #include "DX12/DXGI/DXGIFactory.h"
 #include "DX12/DXGI/DXGIAdapter.h"
 
@@ -22,6 +24,10 @@ namespace Engine {
 		cmdQ.FlushQuene();
 
 
+		for (int i = 0; i < shadowTransforms.size(); i++)
+		{
+			shadowTransforms[i].Release();
+		}
 		for (int i = 0; i < objectTransforms.size(); i++)
 		{
 			objectTransforms[i].Release();
@@ -226,7 +232,7 @@ namespace Engine {
 		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX projectionMatrix;
 
-		viewMatrix = DirectX::XMMatrixLookAtLH({ 6.0f, 6.0f, -6.0f, 0.0f}, // camera pos
+		viewMatrix = DirectX::XMMatrixLookAtLH({ -3.0f, 10.0f, -10.0f, 0.0f}, // camera pos
 											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
 											   { 0.0f, 1.0f, 0.0f, 0.0f });
 		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f/9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far
@@ -241,59 +247,105 @@ namespace Engine {
 			Material material1;
 			material1.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
 			materialBuffers[0].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			materialBuffers[0]->SetName(L"Material buffer 1");
+			materialBuffers[0]->SetName(L"Material buffer 0");
 			bufferUploader.Upload((D12Resource*)materialBuffers[0].GetAddressOf(), &material1, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 
 			materialBuffers.emplace_back(D12Resource());
 			Material material2;
 			material2.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
 			materialBuffers[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			materialBuffers[1]->SetName(L"Material buffer 2");
+			materialBuffers[1]->SetName(L"Material buffer 1");
 			bufferUploader.Upload((D12Resource*)materialBuffers[1].GetAddressOf(), &material2, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		
 			materialBuffers.emplace_back(D12Resource());
 			Material material3;
-			material2.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
+			material3.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
 			materialBuffers[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			materialBuffers[2]->SetName(L"Material buffer 3");
-			bufferUploader.Upload((D12Resource*)materialBuffers[2].GetAddressOf(), &material2, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			materialBuffers[2]->SetName(L"Material buffer 2");
+			bufferUploader.Upload((D12Resource*)materialBuffers[2].GetAddressOf(), &material3, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		
+			materialBuffers.emplace_back(D12Resource());
+			Material material_shadow;
+			material_shadow.albedo = { 0.0f, 0.0f, 0.0f, 0.5f };
+			materialBuffers[3].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+			materialBuffers[3]->SetName(L"Material buffer shadow");
+			bufferUploader.Upload((D12Resource*)materialBuffers[3].GetAddressOf(), &material_shadow, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 		
 		}
 
-		lights[0].position = { 0.0f, 0.0f, 0.0f };
-		lights[0].strength = 0.5f;
-		lights[0].direction = { -1.0f, -1.0f, 0.0f };
+		lights[0].position = { 0.0f,0.0f,0.0f };
+		lights[0].strength = 1.0f;
+		lights[0].direction = { 1.0f,-1.0f,0.0f };
 
 		{
-			ObjectData objdata1;
-			objdata1.transform.r[0] = { 1.0f, 0.0f, 0.0f, 0.0f }; // x scale
-			objdata1.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
-			objdata1.transform.r[2] = { 0.0f, 0.0f, 1.0f, 0.0f }; // z scale
-			objdata1.transform.r[3] = { 0.0f, 2.0f, -2.0f, 1.0f }; // xyz pos
+			ObjectData tempData;
+			tempData.transform.r[0] = { 1.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
+			tempData.transform.r[2] = { 0.0f, 0.0f, 5.0f, 0.0f }; // z scale
+			tempData.transform.r[3] = { -5.0f, 5.0f, -2.0f, 1.0f }; // xyz pos
+			objectTransformsCPU.push_back(tempData);
 			objectTransforms.emplace_back(D12Resource());
 			objectTransforms[0].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-			objectTransforms[0]->SetName(L"Object transform 1");
-			memcpy(objectTransforms[0].GetCPUMemory(), &objdata1, sizeof(ObjectData));
+			objectTransforms[0]->SetName(L"Object transform 0");
+			memcpy(objectTransforms[0].GetCPUMemory(), &tempData, sizeof(ObjectData));
 
-			ObjectData objdata2;
-			objdata2.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
-			objdata2.transform.r[1] = { 0.0f, 1.0f, 0.0f, 0.0f }; // y scale
-			objdata2.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
-			objdata2.transform.r[3] = { 2.0f, 3.0f, 5.0f, 1.0f }; // xyz pos
+			tempData.transform = DirectX::XMMatrixIdentity();
+			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			tempData.transform.r[1] = { 0.0f, 1.0f, 0.0f, 0.0f }; // y scale
+			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
+			tempData.transform.r[3] = { 2.0f, 5.0f, 5.0f, 1.0f }; // xyz pos
+			objectTransformsCPU.push_back(tempData);
 			objectTransforms.emplace_back(D12Resource());
 			objectTransforms[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-			objectTransforms[1]->SetName(L"Object transform 2");
-			memcpy(objectTransforms[1].GetCPUMemory(), &objdata2, sizeof(ObjectData));
+			objectTransforms[1]->SetName(L"Object transform 1");
+			memcpy(objectTransforms[1].GetCPUMemory(), &tempData, sizeof(ObjectData));
 
-			ObjectData objdata3;
-			objdata3.transform.r[0] = { 50.0f, 0.0f, 0.0f, 0.0f }; // x scale
-			objdata3.transform.r[1] = { 0.0f, 0.1f, 0.0f, 0.0f }; // y scale
-			objdata3.transform.r[2] = { 0.0f, 0.0f, 50.0f, 0.0f }; // z scale
-			objdata3.transform.r[3] = { 0.0f, 0.0f, 0.0f, 1.0f }; // xyz pos
+			tempData.transform = DirectX::XMMatrixIdentity();
+			tempData.transform.r[0] = { 1000.0f, 0.0f,  0.0f,    0.0f };
+			tempData.transform.r[1] = { 0.0f,    1.0f,  0.0f,    0.0f };
+			tempData.transform.r[2] = { 0.0f,    0.0,   1000.0f, 0.0f };
+			tempData.transform.r[3] = { 0.0f,   -1.0f,  0.0f,    1.0f };
+
 			objectTransforms.emplace_back(D12Resource());
 			objectTransforms[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-			objectTransforms[2]->SetName(L"Object transform 3");
-			memcpy(objectTransforms[2].GetCPUMemory(), &objdata3, sizeof(ObjectData));
+			objectTransforms[2]->SetName(L"Object transform 2 (floor)");
+			objectTransformsCPU.push_back(tempData);
+
+			memcpy(objectTransforms[2].GetCPUMemory(), &tempData, sizeof(ObjectData));
+
+			tempData.transform = DirectX::XMMatrixIdentity();
+			tempData.transform.r[0] = { 1.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			tempData.transform.r[1] = { 0.0f, 1.0f, 0.0f, 0.0f }; // y scale
+			tempData.transform.r[2] = { 0.0f, 0.0f, 1.0f, 0.0f }; // z scale
+			tempData.transform.r[3] = { 3.0f, 5.0f, 0.0f, 1.0f }; // xyz pos
+			objectTransformsCPU.push_back(tempData);
+			objectTransforms.emplace_back(D12Resource());
+			objectTransforms[3].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+			objectTransforms[3]->SetName(L"Object transform 3");
+			memcpy(objectTransforms[3].GetCPUMemory(), &tempData, sizeof(ObjectData));
+		}
+
+		//Shadow transforms
+		{
+			shadowTransforms.resize(objectTransforms.size());
+
+
+			for (int i = 0; i < objectTransforms.size(); i++) {
+				shadowTransforms[i].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+				std::wstring name = L"Shadow transform buffer ";
+				name.append(std::to_wstring(i));
+
+				shadowTransforms[i]->SetName(name.c_str());
+
+				ObjectData tempData;
+
+				memcpy(shadowTransforms[i].GetCPUMemory(), &tempData, sizeof(ObjectData));
+
+
+			}
+
+
+
 		}
 
 
@@ -303,8 +355,26 @@ namespace Engine {
 
 	void Renderer::UpdateDraw(){
 
-		memcpy(PassDataBuffer.GetCPUMemory(), &viewProjMatrix, sizeof(PassData::viewprojmatrix));
-		memcpy((BYTE*)PassDataBuffer.GetCPUMemory()+sizeof(PassData::viewprojmatrix), &lights[0], sizeof(Light));
+		{
+
+			memcpy(PassDataBuffer.GetCPUMemory(), &viewProjMatrix, sizeof(PassData::viewprojmatrix));
+			memcpy((BYTE*)PassDataBuffer.GetCPUMemory()+sizeof(PassData::viewprojmatrix), &lights[0], sizeof(Light));
+
+			DirectX::XMVECTOR planeToCastShadow = { 0.0f,1.0f,0.0f,0.0f };
+			DirectX::XMVECTOR dirToLightSource = DirectX::XMVectorNegate(DirectX::XMLoadFloat3(&lights[0].direction));
+
+			DirectX::XMMATRIX shadowMatrix = DirectX::XMMatrixShadow(planeToCastShadow, dirToLightSource);
+			DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 0.001f, 0.0f);
+
+
+			for (int i = 0; i < shadowTransforms.size(); i++) {
+				ObjectData tempData;
+				tempData.transform = objectTransformsCPU[i].transform * shadowMatrix * translation;
+				memcpy(shadowTransforms[i].GetCPUMemory(), &tempData, sizeof(ObjectData));
+
+			}
+
+		}
 
 		D3D12_RESOURCE_BARRIER barrier = {};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -327,29 +397,46 @@ namespace Engine {
 		cmdL.GraphicsCmd()->RSSetScissorRects(1, &SRRect);
 
 		cmdL.GraphicsCmd()->SetGraphicsRootSignature(basePipeline.GetRootSignature());
+
 		cmdL.GraphicsCmd()->SetPipelineState(basePipeline.Get());
 		cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView);
 		cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
+		cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 		{
-			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[0]->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[0].Get()->GetGPUVirtualAddress());
 
 			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
 		}
 		{
-			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[1]->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[1].Get()->GetGPUVirtualAddress());
 
 			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
 		}
 		{
-			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[2]->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[2].Get()->GetGPUVirtualAddress());
+
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+		}
+
+		cmdL.GraphicsCmd()->SetPipelineState(shadowPipeline.Get());
+		cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		{
+
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, shadowTransforms[0].Get()->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[3].Get()->GetGPUVirtualAddress());
+
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+		}
+		{
+
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, shadowTransforms[1].Get()->GetGPUVirtualAddress());
+			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[3].Get()->GetGPUVirtualAddress());
 
 			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
 		}

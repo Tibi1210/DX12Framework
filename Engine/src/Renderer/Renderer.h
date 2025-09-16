@@ -55,6 +55,7 @@ namespace Engine {
 		D12Resource indexBuffer;
 		D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
+		std::vector<Render::ObjectData> objectTransformsCPU;
 		std::vector<D12Resource> materialBuffers;
 
 		D12PipelineState basePipeline;
@@ -68,6 +69,7 @@ namespace Engine {
 		Render::Light lights[8];
 
 		std::vector<D12Resource> objectTransforms;
+		std::vector<D12Resource> shadowTransforms;
 
 
 
