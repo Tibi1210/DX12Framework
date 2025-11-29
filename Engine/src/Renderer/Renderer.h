@@ -22,6 +22,8 @@
 #include "DX12/Descriptors/D12DescriptorHeap.h"
 #include "DX12/MemoryManagement/BufferUploader.h"
 
+#include "../ModelLoader/ModelLoader.h"
+
 namespace Engine {
 
 	class RENDER_API Renderer{
@@ -38,6 +40,8 @@ namespace Engine {
 		void Release();
 
 	private:
+
+		ModelLoader modelLoader;
 
 		UINT rWidth, rHeight = 0;
 		D3D12_VIEWPORT viewport;
@@ -72,6 +76,8 @@ namespace Engine {
 
 		std::vector<D12Resource> objectTransforms;
 		std::vector<D12Resource> shadowTransforms;
+
+		std::vector<Render::MeshDataRAW> meshes;
 
 
 

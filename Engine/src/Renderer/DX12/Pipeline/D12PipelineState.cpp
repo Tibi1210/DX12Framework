@@ -32,7 +32,7 @@ namespace Engine {
 		psDesc.RasterizerState = {};
 		psDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 		psDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK; //back!!!
-		psDesc.RasterizerState.FrontCounterClockwise = true; // blender
+		psDesc.RasterizerState.FrontCounterClockwise = false; // blender
 		psDesc.RasterizerState.DepthClipEnable = true;
 		psDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 		

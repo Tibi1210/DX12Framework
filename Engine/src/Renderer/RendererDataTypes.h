@@ -13,6 +13,16 @@ namespace Engine {
 
 		};
 
+		struct MeshDataRAW{
+
+			UINT32 vertexCount = 0;
+			UINT32 vertexOffset = 0;
+			UINT32 indexCount = 0;
+			UINT32 indexOffset = 0;
+
+
+		};
+
 		struct Material {
 
 			DirectX::XMFLOAT4 albedo = { 0.0f, 0.0f, 0.0f, 1.0f };

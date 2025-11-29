@@ -71,134 +71,24 @@ namespace Engine {
 		cmdL.Initialize(device.Get());
 		swapchain.Initialize(device.Get(), factory.Get(), cmdQ.Get(), hwnd, rWidth, rHeight);
 		bufferUploader.Initialize(device.Get(), KBs(64));
+
+		std::vector<Vertex> vertices;
+		std::vector<UINT32> indices;
+		modelLoader.LoadFBXModel("Models/cubes.fbx", vertices, indices, meshes);
+
 		vertexBuffer.Initialize(device.Get(), KBs(8), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 		vertexBuffer.Get()->SetName(L"Vertex buffer");
 
-		#define G_VERTS 24
-		Vertex boxVerts[G_VERTS];
-
-		boxVerts[0].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[0].normal = { 0.0f, 1.0f, 0.0f };
-
-		boxVerts[1].position = { -1.0f, 1.0f, -1.0f };
-		boxVerts[1].normal = { 0.0f, 1.0f, 0.0f };
-
-		boxVerts[2].position = { 1.0f, 1.0f, 1.0f };
-		boxVerts[2].normal = { 0.0f, 1.0f, 0.0f };
-
-		boxVerts[3].position = { -1.0f, -1.0f, -1.0f };
-		boxVerts[3].normal = { 0.0f, 0.0f, -1.0f };
-
-		boxVerts[4].position = { 1.0f, -1.0f, -1.0f };
-		boxVerts[4].normal = { 0.0f, 0.0f, -1.0f };
-
-		boxVerts[5].position = { -1.0f, 1.0f, -1.0f };
-		boxVerts[5].normal = { 0.0f, 0.0f, -1.0f };
-
-		boxVerts[6].position = { 1.0f, -1.0f, -1.0f };
-		boxVerts[6].normal = { 1.0f, 0.0f, 0.0f };
-
-		boxVerts[7].position = { 1.0f, -1.0f, 1.00000 };
-		boxVerts[7].normal = { 1.0f, 0.0f ,0.0f };
-
-		boxVerts[8].position = { 1.0f, 1.0f, -1.0f };
-		boxVerts[8].normal = { 1.0f, 0.0f, 0.0f };
-
-		boxVerts[9].position = { 1.0f, -1.0f, 1.0f };
-		boxVerts[9].normal = { 0.0f, -1.0f, 0.0f };
-
-		boxVerts[10].position = { 1.0f, -1.0f, -1.0f };
-		boxVerts[10].normal = { 0.0f, -1.0f, 0.0f };
-
-		boxVerts[11].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[11].normal = { 0.0f, -1.0f, 0.0f };
-
-		boxVerts[12].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[12].normal = { -1.0f, 0.0f ,0.0f };
-
-		boxVerts[13].position = { -1.0f, -1.0f, -1.0f };
-		boxVerts[13].normal = { -1.0f, 0.0f, 0.0f };
-
-		boxVerts[14].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[14].normal = { -1.0f, 0.0f, 0.0f };
-
-		boxVerts[15].position = { 1.0f, -1.0f, 1.00000 };
-		boxVerts[15].normal = { 0.0f, 0.0f ,1.0f };
-
-		boxVerts[16].position = { -1.0f, -1.0f, 1.0f };
-		boxVerts[16].normal = { 0.0f, 0.0f, 1.0f };
-
-		boxVerts[17].position = { 1.0f, 1.0f, 1.0f };
-		boxVerts[17].normal = { 0.0f, 0.0f, 1.0f };
-
-		boxVerts[18].position = { 1.0f, 1.0f, -1.0f };
-		boxVerts[18].normal = { 0.0f, 1.0f, 0.0f };
-
-		boxVerts[19].position = { 1.0f, 1.0f, -1.0f };
-		boxVerts[19].normal = { 0.0f, 0.0f ,-1.0f };
-
-		boxVerts[20].position = { 1.0f, 1.0f, 1.0f };
-		boxVerts[20].normal = { 1.0f, 0.0f, 0.0f };
-
-		boxVerts[21].position = { -1.0f, -1.0f, -1.0f };
-		boxVerts[21].normal = { 0.0f ,-1.0f, 0.0f };
-
-		boxVerts[22].position = { -1.0f, 1.0f, -1.0f };
-		boxVerts[22].normal = { -1.0f, 0.0f, 0.0f };
-
-		boxVerts[23].position = { -1.0f, 1.0f, 1.0f };
-		boxVerts[23].normal = { 0.0f, 0.0f, 1.0f };
-
-		bufferUploader.Upload((D12Resource*)vertexBuffer.GetAddressOf(), boxVerts, sizeof(Vertex) * G_VERTS, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		bufferUploader.Upload((D12Resource*)vertexBuffer.GetAddressOf(), vertices.data(), sizeof(Vertex) * vertices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
 		vertexBufferView.BufferLocation = vertexBuffer.Get()->GetGPUVirtualAddress();
 		vertexBufferView.StrideInBytes = sizeof(Vertex);
 		vertexBufferView.SizeInBytes = KBs(8);
 
-
-		#define G_INDICES 36
-		UINT32 indicies[G_INDICES];
-		indicies[0] = 0;
-		indicies[1] = 1;
-		indicies[2] = 2;
-		indicies[3] = 3;
-		indicies[4] = 4;
-		indicies[5] = 5;
-		indicies[6] = 6;
-		indicies[7] = 7;
-		indicies[8] = 8;
-		indicies[9] = 9;
-		indicies[10] = 10;
-		indicies[11] = 11;
-		indicies[12] = 12;
-		indicies[13] = 13;
-		indicies[14] = 14;
-		indicies[15] = 15;
-		indicies[16] = 16;
-		indicies[17] = 17;
-		indicies[18] = 1;
-		indicies[19] = 18;
-		indicies[20] = 2;
-		indicies[21] = 4;
-		indicies[22] = 19;
-		indicies[23] = 5;
-		indicies[24] = 7;
-		indicies[25] = 20;
-		indicies[26] = 8;
-		indicies[27] = 10;
-		indicies[28] = 21;
-		indicies[29] = 11;
-		indicies[30] = 13;
-		indicies[31] = 22;
-		indicies[32] = 14;
-		indicies[33] = 16;
-		indicies[34] = 23;
-		indicies[35] = 17;
-
 		indexBuffer.Initialize(device.Get(), KBs(16), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 		indexBuffer.Get()->SetName(L"Index buffer");
 		
-		bufferUploader.Upload((D12Resource*)indexBuffer.GetAddressOf(), indicies, sizeof(UINT32) * G_INDICES, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		bufferUploader.Upload((D12Resource*)indexBuffer.GetAddressOf(), indices.data(), sizeof(UINT32) * indices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 
 		indexBufferView.BufferLocation = indexBuffer.Get()->GetGPUVirtualAddress();
 		indexBufferView.Format = DXGI_FORMAT_R32_UINT;
@@ -339,19 +229,12 @@ namespace Engine {
 
 
 			}
-
-
-
 		}
-
-
-
-
 	}
 
 	void Renderer::UpdateDraw(const float dt){
 
-		viewMatrix = DirectX::XMMatrixLookAtLH(	{ -3.0f+ deltaSum, 10.0f, -10.0f, 0.0f }, // camera pos
+		viewMatrix = DirectX::XMMatrixLookAtLH(	{ -3.0f, 10.0f, -10.0f, 0.0f }, // camera pos
 												{ 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
 												{ 0.0f, 1.0f, 0.0f, 0.0f });
 		viewProjMatrix = viewMatrix * projectionMatrix;
@@ -409,19 +292,25 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[0]->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[0].Get()->GetGPUVirtualAddress());
 
-			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+			Render::MeshDataRAW* rawMeshData = &meshes[1];
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
+
 		}
 		{
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[1]->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[1].Get()->GetGPUVirtualAddress());
 
-			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+			Render::MeshDataRAW* rawMeshData = &meshes[2];
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
+
 		}
 		{
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[2]->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[2].Get()->GetGPUVirtualAddress());
 
-			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+			Render::MeshDataRAW* rawMeshData = &meshes[0];
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
+
 		}
 
 		cmdL.GraphicsCmd()->SetPipelineState(shadowPipeline.Get());
@@ -432,14 +321,18 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, shadowTransforms[0].Get()->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[3].Get()->GetGPUVirtualAddress());
 
-			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+			Render::MeshDataRAW* rawMeshData = &meshes[1];
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
+
 		}
 		{
 
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, shadowTransforms[1].Get()->GetGPUVirtualAddress());
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[3].Get()->GetGPUVirtualAddress());
 
-			cmdL.GraphicsCmd()->DrawIndexedInstanced(G_INDICES, 1, 0, 0, 0);
+			Render::MeshDataRAW* rawMeshData = &meshes[2];
+			cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
+
 		}
 
 		barrier = {};
