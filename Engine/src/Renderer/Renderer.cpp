@@ -229,13 +229,9 @@ namespace Engine {
 		SRRect.top = 0;
 		SRRect.bottom = viewport.Height;
 
-		DirectX::XMMATRIX viewMatrix;
-		DirectX::XMMATRIX projectionMatrix;
-
 		viewMatrix = DirectX::XMMatrixLookAtLH({ -3.0f, 10.0f, -10.0f, 0.0f}, // camera pos
 											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
 											   { 0.0f, 1.0f, 0.0f, 0.0f });
-		projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f/9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far
 		viewProjMatrix = viewMatrix * projectionMatrix;
 
 		PassDataBuffer.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(PassData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -353,7 +349,12 @@ namespace Engine {
 
 	}
 
-	void Renderer::UpdateDraw(){
+	void Renderer::UpdateDraw(const float dt){
+
+		viewMatrix = DirectX::XMMatrixLookAtLH(	{ -3.0f+ deltaSum, 10.0f, -10.0f, 0.0f }, // camera pos
+												{ 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
+												{ 0.0f, 1.0f, 0.0f, 0.0f });
+		viewProjMatrix = viewMatrix * projectionMatrix;
 
 		{
 

@@ -4,8 +4,6 @@
 //#include <windowsx.h>
 #include "Renderer/DX12/Debug/DXGIDebug.h"
 
-
-
 namespace Engine {
 
 	LRESULT CALLBACK WindProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -67,6 +65,9 @@ namespace Engine {
 	}
 
 	void Application::Run(){
+
+		float dt = timeSystem.Tick();
+
 		MSG message;
 		while (PeekMessage(&message, 0, 0, 0, PM_REMOVE)){
 			TranslateMessage(&message);
@@ -75,11 +76,11 @@ namespace Engine {
 
 		if (_isRunning)
 		{
-			renderer.UpdateDraw();
+			renderer.UpdateDraw(dt);
 		}
 	}
 
-	void Application::onDestroy(){
+    void Application::onDestroy(){
 
 		_isRunning = false;
 		renderer.Release();

@@ -32,7 +32,7 @@ namespace Engine {
 
 		void Initialize(HWND hwnd, const UINT width, const UINT height);
 
-		void UpdateDraw();
+		void UpdateDraw(const float dt);
 
 
 		void Release();
@@ -64,6 +64,8 @@ namespace Engine {
 		D12DescriptorHeap depthHeap;
 		D12Resource PassDataBuffer;
 
+		DirectX::XMMATRIX viewMatrix;
+		DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f / 9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far;
 		DirectX::XMMATRIX viewProjMatrix;
 
 		Render::Light lights[8];

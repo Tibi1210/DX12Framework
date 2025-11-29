@@ -6,6 +6,8 @@
 
 #include "Renderer/Renderer.h"
 
+#include "Renderer/DX12/Time/TimeStep.h"
+
 namespace Engine {
 
 	class RENDER_API Application{
@@ -26,6 +28,8 @@ namespace Engine {
 
 	private:
 		Renderer renderer;
+		Timer::TimeStep timeSystem;
+
 		HWND mWindowHandle = nullptr;
 		bool _isRunning = false;
 

@@ -53,6 +53,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -72,6 +73,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -80,6 +82,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Renderer\DX12\Input\Keyboard.h" />
     <ClInclude Include="src\Renderer\DX12\MemoryManagement\BufferUploader.h" />
     <ClInclude Include="src\Renderer\DX12\Descriptors\D12DescriptorHeap.h" />
     <ClInclude Include="src\Renderer\DX12\Pipeline\D12PipelineState.h" />
@@ -102,8 +105,10 @@
     <ClInclude Include="src\EngineBase.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\Renderer\DX12\Utilities\Utilities.h" />
+    <ClInclude Include="src\Renderer\DX12\Time\TimeStep.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\DX12\Input\Keyboard.cpp" />
     <ClCompile Include="src\Renderer\DX12\MemoryManagement\BufferUploader.cpp" />
     <ClCompile Include="src\Renderer\DX12\Descriptors\D12DescriptorHeap.cpp" />
     <ClCompile Include="src\Renderer\DX12\Pipeline\D12PipelineState.cpp" />
@@ -125,6 +130,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Renderer\DX12\Utilities\Utilities.cpp" />
+    <ClCompile Include="src\Renderer\DX12\Time\TimeStep.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
