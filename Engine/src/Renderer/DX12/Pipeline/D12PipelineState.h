@@ -15,6 +15,12 @@ namespace Engine {
 
 		void Initialize(ID3D12Device* pDevice);
 
+		void InitializeDeffered(ID3D12Device* pDevice);
+
+		void InitializeShadowMap(ID3D12Device* pDevice);
+
+		void InitializeDefferedPixel(ID3D12Device* pDevice, std::wstring path);
+
 		void InitializeAsTransparent(ID3D12Device* pDevice);
 
 		inline ID3D12RootSignature* GetRootSignature() { return rootSignature.Get(); };

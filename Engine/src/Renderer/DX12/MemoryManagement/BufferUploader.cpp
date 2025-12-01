@@ -10,7 +10,7 @@ namespace Engine {
 	void BufferUploader::Initialize(ID3D12Device* pDevice, const UINT memAlloc){
 
 		internalBuffer.Initialize(pDevice, memAlloc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-		
+		internalBuffer.Get()->SetName(L"UPLOAD BUFFER");
 		internalMemory = internalBuffer.GetCPUMemory();
 		maxSize = memAlloc;
 	}

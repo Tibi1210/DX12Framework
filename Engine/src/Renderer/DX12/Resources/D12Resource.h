@@ -17,13 +17,25 @@ namespace Engine {
 
 		void Initialize(ID3D12Device* pDevice, const unsigned int numBytes, D3D12_HEAP_TYPE heapType, D3D12_RESOURCE_STATES initState);
 		
-		void InitializeDepthBuffer(ID3D12Device* pDevice, const unsigned int width, const unsigned int height);
+		void InitializeDepthBuffer(ID3D12Device* pDevice, const unsigned int width, const unsigned int height, const DXGI_FORMAT format = DXGI_FORMAT_D24_UNORM_S8_UINT);
+		void InitializeTexture(ID3D12Device* pDevice, const unsigned int width, const unsigned int height, const DXGI_FORMAT format);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC& GetSRV() { return mView.srv; };
 
 		void* GetCPUMemory();
 
 		void Release();
 
+
 	private:
+
+		void CreateSRV();
+
+		union View {
+			D3D12_SHADER_RESOURCE_VIEW_DESC srv;
+		};
+
+		View mView;
 
 		void* memory = nullptr;
 

@@ -44,14 +44,14 @@ namespace Engine {
 		ModelLoader modelLoader;
 
 		UINT rWidth, rHeight = 0;
-		D3D12_VIEWPORT viewport;
-		D3D12_RECT SRRect;
-
+		D3D12_VIEWPORT viewport[2];
+		D3D12_RECT SRRect[2];
 
 		D12Device device;
 		D12CmdQueue cmdQ;
 		D12CmdList cmdL;
 		DXGISwapChain swapchain;
+
 		BufferUploader bufferUploader;
 
 		D12Resource vertexBuffer;
@@ -60,22 +60,27 @@ namespace Engine {
 		D3D12_INDEX_BUFFER_VIEW indexBufferView;
 
 		std::vector<Render::ObjectData> objectTransformsCPU;
-		std::vector<D12Resource> materialBuffers;
 
-		D12PipelineState basePipeline;
-		D12PipelineState shadowPipeline;
-		D12Resource depthBuffer;
+		D12PipelineState defferedPipeline;
+		D12PipelineState defferedPixelPipeline;
+		D12DescriptorHeap defferedRenderTargetHeap;
+		D12DescriptorHeap SRVHeap;
+		D12Resource defferedOutputTextures[3];
+
+		D12PipelineState shadowMapPipeline;
+
+		D12Resource depthBuffers[2];
 		D12DescriptorHeap depthHeap;
-		D12Resource PassDataBuffer;
 
+		D12Resource PassDataBuffer;
 		DirectX::XMMATRIX viewMatrix;
 		DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f / 9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far;
 		DirectX::XMMATRIX viewProjMatrix;
 
 		Render::Light lights[8];
 
+		std::vector<D12Resource> materialBuffers;
 		std::vector<D12Resource> objectTransforms;
-		std::vector<D12Resource> shadowTransforms;
 
 		std::vector<Render::MeshDataRAW> meshes;
 

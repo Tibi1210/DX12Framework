@@ -12,6 +12,8 @@ namespace Engine {
 		
 		EVAL_HRES(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr, IID_PPV_ARGS(&ptr_)), "Error creating command list.");
 
+		Get()->QueryInterface(IID_PPV_ARGS(&graphicsCmdList));
+
 	}
 
 	void D12CmdList::ResetCmd(){
@@ -22,6 +24,11 @@ namespace Engine {
 	}
 
 	void D12CmdList::Release() {
+
+		if (Get() && graphicsCmdList){
+			graphicsCmdList->Release();
+		}
+
 		if (Get()){
 			Reset();
 		}
