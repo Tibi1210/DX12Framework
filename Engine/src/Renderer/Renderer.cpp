@@ -23,14 +23,10 @@ namespace Engine {
 
 		cmdQ.FlushQuene();
 
-		for (int i = 0; i < objectTransforms.size(); i++)
-		{
-			objectTransforms[i].Release();
+		for (auto& obj : scene.elements) {
+			obj.get()->Release();
 		}
-		for (int i = 0; i < materialBuffers.size(); i++)
-		{
-			materialBuffers[i].Release();
-		}
+
 		PassDataBuffer.Release();
 
 		depthHeap.Release();
@@ -87,33 +83,27 @@ namespace Engine {
 		// MODEL LOADING
 		{	
 
-
 			scene.elements.clear();  // Clear destination first
-			std::vector<std::unique_ptr<Mesh>> meshObjs;
 
 			std::vector<Vertex> vertices;
 			std::vector<UINT32> indices;
-			modelLoader.LoadFBXModel("Models/shapes.fbx", vertices, indices, meshes, meshObjs);
+			modelLoader.LoadFBXModel("Models/shapes.fbx", vertices, indices, scene.elements);
 
-			scene.elements.reserve(meshObjs.size());  // Optional: pre-allocate for efficiency
-
-			for (auto& meshPtr : meshObjs) {
-				if (meshPtr) {
-					scene.elements.emplace_back(std::unique_ptr<Object>(meshPtr.release()));
-				}
-			}
+			scene.elements.emplace_back(std::make_unique<Object>());
 
 			for (auto& v : scene.elements) {
-				v->Release();  // Calls correct virtual function
+				PRINT_N("Type: " << v->id << " Name: " << v->name);
+				//v->Release();  // Calls correct virtual function
 			}
+			static_cast<Mesh*>(scene.elements[1].get())->includeInShadowMap = true;
+			static_cast<Mesh*>(scene.elements[2].get())->includeInShadowMap = true;
 
 
 			size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
 			size_t indexBufferSize = indices.size() * sizeof(UINT32);
 			PRINT_N("vertex size: " << vertexBufferSize);
 			PRINT_N("index size: " << indexBufferSize);
-			//vertex size : 1372608
-			//index size : 232944
+
 			vertexBuffer.Initialize(device.Get(), vertexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 			vertexBuffer.Get()->SetName(L"Vertex buffer");
 
@@ -276,27 +266,19 @@ namespace Engine {
 
 		// materials
 		{
-			materialBuffers.emplace_back(D12Resource());
-			Material material1;
-			material1.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
-			materialBuffers[0].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			materialBuffers[0]->SetName(L"Material buffer 0");
-			bufferUploader.Upload((D12Resource*)materialBuffers[0].GetAddressOf(), &material1, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			static_cast<Mesh*>(scene.elements[0].get())->material.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
+			static_cast<Mesh*>(scene.elements[1].get())->material.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
+			static_cast<Mesh*>(scene.elements[2].get())->material.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
 
-			materialBuffers.emplace_back(D12Resource());
-			Material material2;
-			material2.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
-			materialBuffers[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			materialBuffers[1]->SetName(L"Material buffer 1");
-			bufferUploader.Upload((D12Resource*)materialBuffers[1].GetAddressOf(), &material2, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
-		
-			materialBuffers.emplace_back(D12Resource());
-			Material material3;
-			material3.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
-			materialBuffers[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			materialBuffers[2]->SetName(L"Material buffer 2");
-			bufferUploader.Upload((D12Resource*)materialBuffers[2].GetAddressOf(), &material3, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
-		
+			for (auto& mesh : scene.elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					static_cast<Mesh*>(mesh.get())->materialResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+					std::wstring name = L"Material for ";
+					name.append(mesh.get()->name.begin(), mesh.get()->name.end());
+					static_cast<Mesh*>(mesh.get())->materialResource->SetName(name.c_str());
+					bufferUploader.Upload((D12Resource*)static_cast<Mesh*>(mesh.get())->materialResource.GetAddressOf(), &static_cast<Mesh*>(mesh.get())->material.albedo, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+				}
+			}
 
 		}
 
@@ -307,38 +289,33 @@ namespace Engine {
 		// obj transforms
 		{
 			ObjectData tempData;
-			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
-			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
-			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
-			tempData.transform.r[3] = { -5.0f, 5.0f, -2.0f, 1.0f }; // xyz pos
-			objectTransformsCPU.push_back(tempData);
-			objectTransforms.emplace_back(D12Resource());
-			objectTransforms[0].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-			objectTransforms[0]->SetName(L"Object transform 0");
-			memcpy(objectTransforms[0].GetCPUMemory(), &tempData, sizeof(ObjectData));
-
+			tempData.transform.r[0] = { 1000.0f, 0.0f,  0.0f,    0.0f };
+			tempData.transform.r[1] = { 0.0f,    1.0f,  0.0f,    0.0f };
+			tempData.transform.r[2] = { 0.0f,    0.0,   1000.0f, 0.0f };
+			tempData.transform.r[3] = { 0.0f,   -1.0f,  0.0f,    1.0f };
+			static_cast<Mesh*>(scene.elements[0].get())->transform = tempData;
 			tempData.transform = DirectX::XMMatrixIdentity();
 			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
 			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
 			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
 			tempData.transform.r[3] = { 2.0f, 5.0f, 5.0f, 1.0f }; // xyz pos
-			objectTransformsCPU.push_back(tempData);
-			objectTransforms.emplace_back(D12Resource());
-			objectTransforms[1].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-			objectTransforms[1]->SetName(L"Object transform 1");
-			memcpy(objectTransforms[1].GetCPUMemory(), &tempData, sizeof(ObjectData));
-
+			static_cast<Mesh*>(scene.elements[1].get())->transform = tempData;
 			tempData.transform = DirectX::XMMatrixIdentity();
-			tempData.transform.r[0] = { 1000.0f, 0.0f,  0.0f,    0.0f };
-			tempData.transform.r[1] = { 0.0f,    1.0f,  0.0f,    0.0f };
-			tempData.transform.r[2] = { 0.0f,    0.0,   1000.0f, 0.0f };
-			tempData.transform.r[3] = { 0.0f,   -1.0f,  0.0f,    1.0f };
-			objectTransforms.emplace_back(D12Resource());
-			objectTransforms[2].Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
-			objectTransforms[2]->SetName(L"Object transform 2 (floor)");
-			objectTransformsCPU.push_back(tempData);
+			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
+			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
+			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
+			tempData.transform.r[3] = { -5.0f, 5.0f, -2.0f, 1.0f }; // xyz pos
+			static_cast<Mesh*>(scene.elements[2].get())->transform = tempData;
 
-			memcpy(objectTransforms[2].GetCPUMemory(), &tempData, sizeof(ObjectData));
+			for (auto& mesh : scene.elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					static_cast<Mesh*>(mesh.get())->transformResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+					std::wstring name = L"Transform for ";
+					name.append(mesh.get()->name.begin(), mesh.get()->name.end());
+					static_cast<Mesh*>(mesh.get())->transformResource->SetName(name.c_str());
+					memcpy(static_cast<Mesh*>(mesh.get())->transformResource.GetCPUMemory(), &static_cast<Mesh*>(mesh.get())->transform, sizeof(ObjectData));
+				}
+			}
 		}
 
 	}
@@ -392,24 +369,15 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 			// draw call
-			{
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[0]->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[0].Get()->GetGPUVirtualAddress());
-
-				Render::MeshDataRAW* rawMeshData = &meshes[1];
-				cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
-
+			for (auto& mesh : scene.elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					if (static_cast<Mesh*>(mesh.get())->includeInShadowMap) {
+						cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
+						cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, static_cast<Mesh*>(mesh.get())->materialResource.Get()->GetGPUVirtualAddress());
+						cmdL.GraphicsCmd()->DrawIndexedInstanced(static_cast<Mesh*>(mesh.get())->mesh.indexCount, 1, static_cast<Mesh*>(mesh.get())->mesh.indexOffset, static_cast<Mesh*>(mesh.get())->mesh.vertexOffset, 0);
+					}
+				}
 			}
-			// draw call
-			{
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[1]->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[1].Get()->GetGPUVirtualAddress());
-
-				Render::MeshDataRAW* rawMeshData = &meshes[2];
-				cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
-
-			}
-
 
 		}
 
@@ -440,32 +408,14 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 			// draw call
-			{
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[0]->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[0].Get()->GetGPUVirtualAddress());
-
-				Render::MeshDataRAW* rawMeshData = &meshes[1];
-				cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
-
+			for (auto& mesh : scene.elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
+					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, static_cast<Mesh*>(mesh.get())->materialResource.Get()->GetGPUVirtualAddress());
+					cmdL.GraphicsCmd()->DrawIndexedInstanced(static_cast<Mesh*>(mesh.get())->mesh.indexCount, 1, static_cast<Mesh*>(mesh.get())->mesh.indexOffset, static_cast<Mesh*>(mesh.get())->mesh.vertexOffset, 0);
+				}
 			}
-			// draw call
-			{
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[1]->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[1].Get()->GetGPUVirtualAddress());
 
-				Render::MeshDataRAW* rawMeshData = &meshes[2];
-				cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
-
-			}
-			// draw call
-			{
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, objectTransforms[2]->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialBuffers[2].Get()->GetGPUVirtualAddress());
-
-				Render::MeshDataRAW* rawMeshData = &meshes[0];
-				cmdL.GraphicsCmd()->DrawIndexedInstanced(rawMeshData->indexCount, 1, rawMeshData->indexOffset, rawMeshData->vertexOffset, 0);
-
-			}
 		}
 
 

@@ -4,6 +4,6 @@
 namespace Engine {
 
 	void Object::Release() {
-		PRINT_N("MESH RELEASED!");
+		PRINT_N("OBJECT RELEASED!");
 	}
 }

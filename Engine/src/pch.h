@@ -12,6 +12,7 @@
 
 #include<vector>
 #include<memory>
+#include<string>
 
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "D3D12.lib")

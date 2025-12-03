@@ -80,8 +80,6 @@ namespace Engine {
 
 		Render::Light lights[8];
 
-		std::vector<D12Resource> materialBuffers;
-		std::vector<D12Resource> objectTransforms;
 
 		std::vector<Render::MeshDataRAW> meshes;
 		
