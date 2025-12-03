@@ -81,32 +81,56 @@ namespace Engine {
 			cmdQ.Initialize(device.Get());
 			cmdL.Initialize(device.Get());
 			swapchain.Initialize(device.Get(), factory.Get(), cmdQ.Get(), hwnd, rWidth, rHeight);
-			bufferUploader.Initialize(device.Get(), KBs(192));
+			bufferUploader.Initialize(device.Get(), KBs(1400));
 		}
 		
 		// MODEL LOADING
-		{
+		{	
+
+
+			scene.elements.clear();  // Clear destination first
+			std::vector<std::unique_ptr<Mesh>> meshObjs;
+
 			std::vector<Vertex> vertices;
 			std::vector<UINT32> indices;
-			modelLoader.LoadFBXModel("Models/shapes.fbx", vertices, indices, meshes);
+			modelLoader.LoadFBXModel("Models/shapes.fbx", vertices, indices, meshes, meshObjs);
 
-			vertexBuffer.Initialize(device.Get(), KBs(192), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+			scene.elements.reserve(meshObjs.size());  // Optional: pre-allocate for efficiency
+
+			for (auto& meshPtr : meshObjs) {
+				if (meshPtr) {
+					scene.elements.emplace_back(std::unique_ptr<Object>(meshPtr.release()));
+				}
+			}
+
+			for (auto& v : scene.elements) {
+				v->Release();  // Calls correct virtual function
+			}
+
+
+			size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
+			size_t indexBufferSize = indices.size() * sizeof(UINT32);
+			PRINT_N("vertex size: " << vertexBufferSize);
+			PRINT_N("index size: " << indexBufferSize);
+			//vertex size : 1372608
+			//index size : 232944
+			vertexBuffer.Initialize(device.Get(), vertexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 			vertexBuffer.Get()->SetName(L"Vertex buffer");
 
 			bufferUploader.Upload((D12Resource*)vertexBuffer.GetAddressOf(), vertices.data(), sizeof(Vertex) * vertices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
 			vertexBufferView.BufferLocation = vertexBuffer.Get()->GetGPUVirtualAddress();
 			vertexBufferView.StrideInBytes = sizeof(Vertex);
-			vertexBufferView.SizeInBytes = KBs(192);
+			vertexBufferView.SizeInBytes = vertexBufferSize;
 
-			indexBuffer.Initialize(device.Get(), KBs(32), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+			indexBuffer.Initialize(device.Get(), indexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 			indexBuffer.Get()->SetName(L"Index buffer");
 
 			bufferUploader.Upload((D12Resource*)indexBuffer.GetAddressOf(), indices.data(), sizeof(UINT32) * indices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 
 			indexBufferView.BufferLocation = indexBuffer.Get()->GetGPUVirtualAddress();
 			indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-			indexBufferView.SizeInBytes = KBs(32);
+			indexBufferView.SizeInBytes = indexBufferSize;
 		}
 
 		// DESCRIPTOR HEAPS

@@ -87,6 +87,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Objects\Mesh\Mesh.h" />
+    <ClInclude Include="src\Objects\Object.h" />
     <ClInclude Include="src\ModelLoader\ModelLoader.h" />
     <ClInclude Include="src\Renderer\DX12\Input\Keyboard.h" />
     <ClInclude Include="src\Renderer\DX12\MemoryManagement\BufferUploader.h" />
@@ -114,6 +116,8 @@
     <ClInclude Include="src\Renderer\DX12\Time\TimeStep.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Objects\Mesh\Mesh.cpp" />
+    <ClCompile Include="src\Objects\Object.cpp" />
     <ClCompile Include="src\ModelLoader\ModelLoader.cpp" />
     <ClCompile Include="src\Renderer\DX12\Input\Keyboard.cpp" />
     <ClCompile Include="src\Renderer\DX12\MemoryManagement\BufferUploader.cpp" />

@@ -23,6 +23,7 @@
 #include "DX12/MemoryManagement/BufferUploader.h"
 
 #include "../ModelLoader/ModelLoader.h"
+#include "../Objects/Object.h"
 
 namespace Engine {
 
@@ -83,9 +84,9 @@ namespace Engine {
 		std::vector<D12Resource> objectTransforms;
 
 		std::vector<Render::MeshDataRAW> meshes;
-
-
-
+		
+		Object scene;
+		
 
 	};
 }

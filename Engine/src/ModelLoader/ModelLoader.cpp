@@ -30,7 +30,7 @@ namespace Engine {
 		return false;
 	}
 
-	void ModelLoader::LoadFBXModel(const char* path, std::vector<Render::Vertex>& outVertices, std::vector<UINT32>& outIndices, std::vector<Render::MeshDataRAW>& outMeshes){
+	void ModelLoader::LoadFBXModel(const char* path, std::vector<Render::Vertex>& outVertices, std::vector<UINT32>& outIndices, std::vector<Render::MeshDataRAW>& outMeshes, std::vector<std::unique_ptr<Mesh>>& outMeshObjs){
 		FbxManager* manager = FbxManager::Create();
 		FbxIOSettings* settings = FbxIOSettings::Create(manager, IOSROOT);
 		manager->SetIOSettings(settings);
@@ -57,6 +57,9 @@ namespace Engine {
 
 		for (int geometry = 0; geometry < scene->GetGeometryCount(); geometry++){
 			
+
+			outMeshObjs.emplace_back(std::make_unique<Mesh>());
+
 			FbxMesh* mesh = static_cast<FbxMesh*>(scene->GetGeometry(geometry));
 			PRINT_N("Geometry #" << geometry + 1);
 			PRINT_N("Vertex count: " << mesh->GetControlPointsCount());
@@ -103,15 +106,18 @@ namespace Engine {
 				}
 				
 			}
-			Render::MeshDataRAW rawMesh;
-			rawMesh.vertexCount = meshVertices.size();
-			rawMesh.vertexOffset = vertexOffset;
-			rawMesh.indexCount = meshIndices.size();
-			rawMesh.indexOffset = indexOffset;
-			outMeshes.emplace_back(rawMesh);
 
-			vertexOffset += rawMesh.vertexCount;
-			indexOffset += rawMesh.indexCount;
+			outMeshObjs.back().get()->mesh.vertexCount = meshVertices.size();
+			outMeshObjs.back().get()->mesh.vertexOffset = vertexOffset;
+			outMeshObjs.back().get()->mesh.indexCount = meshIndices.size();
+			outMeshObjs.back().get()->mesh.indexOffset = indexOffset;
+
+
+			outMeshes.emplace_back(outMeshObjs.back().get()->mesh);
+
+
+			vertexOffset += outMeshObjs.back().get()->mesh.vertexCount;
+			indexOffset += outMeshObjs.back().get()->mesh.indexCount;
 
 			totalMeshVertices.insert(totalMeshVertices.end(), meshVertices.begin(), meshVertices.end());
 			totalMeshIndices.insert(totalMeshIndices.end(), meshIndices.begin(), meshIndices.end());
