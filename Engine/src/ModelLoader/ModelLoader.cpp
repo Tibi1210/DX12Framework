@@ -62,6 +62,8 @@ namespace Engine {
 			Mesh* lastElement = static_cast<Mesh*>(outMeshObj.back().get());
 			
 			FbxMesh* mesh = static_cast<FbxMesh*>(scene->GetGeometry(geometry));
+			
+			//mesh->GetElementMaterial(0)
 
 			lastElement->name = std::string(mesh->GetName());
 	

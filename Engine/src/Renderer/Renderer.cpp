@@ -42,8 +42,10 @@ namespace Engine {
 		defferedPixelPipeline.Release();
 		defferedPipeline.Release();
 
-		indexBuffer.Release();
-		vertexBuffer.Release();
+		for (int i = 0; i < 2; i++) {
+			indexBuffer[i].Release();
+			vertexBuffer[i].Release();
+		}
 
 		bufferUploader.Release();
 
@@ -81,51 +83,113 @@ namespace Engine {
 		
 		// MODEL LOADING
 		{	
-			size_t vertexBufferSize = 0;
-			size_t indexBufferSize = 0;
-			std::vector<Vertex> vertices;
-			std::vector<UINT32> indices;
 
 			scene.elements.clear();  // Clear scene
 
-			// FBX 1
+			// FBX 1 floor
 			{
+				size_t vertexBufferSize = 0;
+				size_t indexBufferSize = 0;
+				std::vector<Vertex> vertices;
+				std::vector<UINT32> indices;
+
 				scene.elements.emplace_back(std::make_unique<Object>());
 				static_cast<Object*>(scene.elements[0].get())->name = "Object 1";
-				static_cast<Mesh*>(scene.elements[0].get())->Load("Models/shapes.fbx");
+				static_cast<Mesh*>(scene.elements[0].get())->Load("Models/floor.fbx");
+
+				DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(100.0f, 0.1f, 100.0f);
+				DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(0.0f)) *
+											 DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(0.0f)) *
+											 DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(0.0f));
+				DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+				DirectX::XMMATRIX transformAll = scale * rotation * translation;
+
 				for (auto& mesh : scene.elements[0].get()->elements) {
 					if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
-						static_cast<Mesh*>(mesh.get())->includeInShadowMap = true;
+						static_cast<Mesh*>(mesh.get())->includeInShadowMap = false;
+						static_cast<Mesh*>(mesh.get())->transform.transform = transformAll;
+						static_cast<Mesh*>(mesh.get())->material.albedo = { 0.4f, 0.4f, 0.4f, 1.0f };
 						vertexBufferSize += static_cast<Mesh*>(mesh.get())->mesh.vertexCount * sizeof(Vertex);
 						indexBufferSize += static_cast<Mesh*>(mesh.get())->mesh.indexCount * sizeof(UINT32);
 						vertices.insert(vertices.end(), static_cast<Mesh*>(mesh.get())->vertices.begin(), static_cast<Mesh*>(mesh.get())->vertices.end());
 						indices.insert(indices.end(), static_cast<Mesh*>(mesh.get())->indices.begin(), static_cast<Mesh*>(mesh.get())->indices.end());
 					}
 				}
-				// In Models/shapes.fbx the first mesh is the floor
-				static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[0].get())->includeInShadowMap = false;
+				PRINT_N("vertex size: " << vertexBufferSize);
+				PRINT_N("index size: " << indexBufferSize);
+
+				vertexBuffer[0].Initialize(device.Get(), vertexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+				vertexBuffer[0].Get()->SetName(L"Vertex buffer Object 1");
+
+				bufferUploader.Upload((D12Resource*)vertexBuffer[0].GetAddressOf(), vertices.data(), sizeof(Vertex) * vertices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+				vertexBufferView[0].BufferLocation = vertexBuffer[0].Get()->GetGPUVirtualAddress();
+				vertexBufferView[0].StrideInBytes = sizeof(Vertex);
+				vertexBufferView[0].SizeInBytes = vertexBufferSize;
+
+				indexBuffer[0].Initialize(device.Get(), indexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+				indexBuffer[0].Get()->SetName(L"Index buffer Object 1");
+
+				bufferUploader.Upload((D12Resource*)indexBuffer[0].GetAddressOf(), indices.data(), sizeof(UINT32) * indices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+
+				indexBufferView[0].BufferLocation = indexBuffer[0].Get()->GetGPUVirtualAddress();
+				indexBufferView[0].Format = DXGI_FORMAT_R32_UINT;
+				indexBufferView[0].SizeInBytes = indexBufferSize;
+
 			}
 
-			PRINT_N("vertex size: " << vertexBufferSize);
-			PRINT_N("index size: " << indexBufferSize);
+			// FBX 2 goober
+			{
+				size_t vertexBufferSize = 0;
+				size_t indexBufferSize = 0;
+				std::vector<Vertex> vertices;
+				std::vector<UINT32> indices;
+				scene.elements.emplace_back(std::make_unique<Object>());
+				static_cast<Object*>(scene.elements[1].get())->name = "Object 2";
+				static_cast<Mesh*>(scene.elements[1].get())->Load("Models/glorp.fbx");
 
-			vertexBuffer.Initialize(device.Get(), vertexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			vertexBuffer.Get()->SetName(L"Vertex buffer");
+				DirectX::XMMATRIX scale = DirectX::XMMatrixScaling(2.0f, 2.0f, 2.0f);
+				DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(-90.0f)) *
+											 DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(0.0f)) *
+											 DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(0.0f));
+				DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 5.0f, 0.0f);
+				DirectX::XMMATRIX transformAll = scale * rotation * translation;
 
-			bufferUploader.Upload((D12Resource*)vertexBuffer.GetAddressOf(), vertices.data(), sizeof(Vertex) * vertices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
-			vertexBufferView.BufferLocation = vertexBuffer.Get()->GetGPUVirtualAddress();
-			vertexBufferView.StrideInBytes = sizeof(Vertex);
-			vertexBufferView.SizeInBytes = vertexBufferSize;
+				for (auto& mesh : scene.elements[1].get()->elements) {
+					if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+						static_cast<Mesh*>(mesh.get())->includeInShadowMap = true;
+						static_cast<Mesh*>(mesh.get())->transform.transform = transformAll;
+						static_cast<Mesh*>(mesh.get())->material.albedo = { 0.0f, 0.4f, 0.0f, 1.0f };
+						vertexBufferSize += static_cast<Mesh*>(mesh.get())->mesh.vertexCount * sizeof(Vertex);
+						indexBufferSize += static_cast<Mesh*>(mesh.get())->mesh.indexCount * sizeof(UINT32);
+						vertices.insert(vertices.end(), static_cast<Mesh*>(mesh.get())->vertices.begin(), static_cast<Mesh*>(mesh.get())->vertices.end());
+						indices.insert(indices.end(), static_cast<Mesh*>(mesh.get())->indices.begin(), static_cast<Mesh*>(mesh.get())->indices.end());
+					}
+				}
+				PRINT_N("vertex size: " << vertexBufferSize);
+				PRINT_N("index size: " << indexBufferSize);
 
-			indexBuffer.Initialize(device.Get(), indexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
-			indexBuffer.Get()->SetName(L"Index buffer");
+				vertexBuffer[1].Initialize(device.Get(), vertexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+				vertexBuffer[1].Get()->SetName(L"Vertex buffer Object 1");
 
-			bufferUploader.Upload((D12Resource*)indexBuffer.GetAddressOf(), indices.data(), sizeof(UINT32) * indices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+				bufferUploader.Upload((D12Resource*)vertexBuffer[1].GetAddressOf(), vertices.data(), sizeof(Vertex) * vertices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
-			indexBufferView.BufferLocation = indexBuffer.Get()->GetGPUVirtualAddress();
-			indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-			indexBufferView.SizeInBytes = indexBufferSize;
+				vertexBufferView[1].BufferLocation = vertexBuffer[1].Get()->GetGPUVirtualAddress();
+				vertexBufferView[1].StrideInBytes = sizeof(Vertex);
+				vertexBufferView[1].SizeInBytes = vertexBufferSize;
+
+				indexBuffer[1].Initialize(device.Get(), indexBufferSize, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+				indexBuffer[1].Get()->SetName(L"Index buffer Object 1");
+
+				bufferUploader.Upload((D12Resource*)indexBuffer[1].GetAddressOf(), indices.data(), sizeof(UINT32) * indices.size(), (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+
+				indexBufferView[1].BufferLocation = indexBuffer[1].Get()->GetGPUVirtualAddress();
+				indexBufferView[1].Format = DXGI_FORMAT_R32_UINT;
+				indexBufferView[1].SizeInBytes = indexBufferSize;
+			}
+
+
 		}
 
 		// DESCRIPTOR HEAPS
@@ -271,10 +335,6 @@ namespace Engine {
 
 		// materials
 		{
-			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[0].get())->material.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
-			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[1].get())->material.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
-			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[2].get())->material.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
-
 			for (auto& mesh : scene.elements[0].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					static_cast<Mesh*>(mesh.get())->materialResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
@@ -284,34 +344,18 @@ namespace Engine {
 					bufferUploader.Upload((D12Resource*)static_cast<Mesh*>(mesh.get())->materialResource.GetAddressOf(), &static_cast<Mesh*>(mesh.get())->material.albedo, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
 				}
 			}
-
+			for (auto& mesh : scene.elements[1].get()->elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					static_cast<Mesh*>(mesh.get())->materialResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
+					std::wstring name = L"Material for ";
+					name.append(mesh.get()->name.begin(), mesh.get()->name.end());
+					static_cast<Mesh*>(mesh.get())->materialResource->SetName(name.c_str());
+					bufferUploader.Upload((D12Resource*)static_cast<Mesh*>(mesh.get())->materialResource.GetAddressOf(), &static_cast<Mesh*>(mesh.get())->material.albedo, sizeof(Material) * 1, (D12CmdList*)cmdL.GetAddressOf(), (D12CmdQueue*)cmdQ.GetAddressOf(), D3D12_RESOURCE_STATE_INDEX_BUFFER);
+				}
+			}
 		}
-
-		lights[0].position = { 0.0f,0.0f,0.0f };
-		lights[0].strength = 1.0f;
-		lights[0].direction = { 1.0f,-1.0f,0.0f };
-
 		// obj transforms
 		{
-			ObjectData tempData;
-			tempData.transform.r[0] = { 1000.0f, 0.0f,  0.0f,    0.0f };
-			tempData.transform.r[1] = { 0.0f,    1.0f,  0.0f,    0.0f };
-			tempData.transform.r[2] = { 0.0f,    0.0,   1000.0f, 0.0f };
-			tempData.transform.r[3] = { 0.0f,   -1.0f,  0.0f,    1.0f };
-			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[0].get())->transform = tempData;
-			tempData.transform = DirectX::XMMatrixIdentity();
-			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
-			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
-			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
-			tempData.transform.r[3] = { 2.0f, 5.0f, 5.0f, 1.0f }; // xyz pos
-			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[1].get())->transform = tempData;
-			tempData.transform = DirectX::XMMatrixIdentity();
-			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
-			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
-			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
-			tempData.transform.r[3] = { -5.0f, 5.0f, -2.0f, 1.0f }; // xyz pos
-			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[2].get())->transform = tempData;
-
 			for (auto& mesh : scene.elements[0].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					static_cast<Mesh*>(mesh.get())->transformResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -321,7 +365,20 @@ namespace Engine {
 					memcpy(static_cast<Mesh*>(mesh.get())->transformResource.GetCPUMemory(), &static_cast<Mesh*>(mesh.get())->transform, sizeof(ObjectData));
 				}
 			}
+			for (auto& mesh : scene.elements[1].get()->elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					static_cast<Mesh*>(mesh.get())->transformResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+					std::wstring name = L"Transform for ";
+					name.append(mesh.get()->name.begin(), mesh.get()->name.end());
+					static_cast<Mesh*>(mesh.get())->transformResource->SetName(name.c_str());
+					memcpy(static_cast<Mesh*>(mesh.get())->transformResource.GetCPUMemory(), &static_cast<Mesh*>(mesh.get())->transform, sizeof(ObjectData));
+				}
+			}
 		}
+
+		lights[0].position = { 0.0f,0.0f,0.0f };
+		lights[0].strength = 1.0f;
+		lights[0].direction = { 1.0f,-1.0f,0.0f };
 
 	}
 
@@ -337,8 +394,8 @@ namespace Engine {
 			DirectX::XMMATRIX viewLights = DirectX::XMMatrixLookAtLH(lightPos, sceneCenter, {0.0f, 1.0f, 0.0f, 0.0f});
 			DirectX::XMMATRIX lightProjMatrix = DirectX::XMMatrixOrthographicLH(20, 20, 0.5f, 200.0f);
 
-			viewMatrix = DirectX::XMMatrixLookAtLH(	{ -3.0f, 10.0f, -10.0f, 0.0f }, // camera pos
-													{ 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
+			viewMatrix = DirectX::XMMatrixLookAtLH(	{ -4.0f, 7.5f, 4.0f, 0.0f }, // camera pos
+													{ 0.0f, 2.0f, 0.0f, 0.0f }, // looking at origin
 													{ 0.0f, 1.0f, 0.0f, 0.0f });
 			viewProjMatrix = viewMatrix * projectionMatrix;
 
@@ -362,8 +419,6 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootSignature(shadowMapPipeline.GetRootSignature());
 			cmdL.GraphicsCmd()->SetPipelineState(shadowMapPipeline.Get());
 			cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView);
-			cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
 
 			// clear depthbuffer for shadowmap
 			{
@@ -374,7 +429,9 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 			// draw call
-			for (auto& mesh : scene.elements[0].get()->elements) {
+			cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[1]);
+			cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[1]);
+			for (auto& mesh : scene.elements[1].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					if (static_cast<Mesh*>(mesh.get())->includeInShadowMap) {
 						cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
@@ -394,8 +451,6 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootSignature(defferedPipeline.GetRootSignature());
 			cmdL.GraphicsCmd()->SetPipelineState(defferedPipeline.Get());
 			cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView);
-			cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
 
 			// clear
 			{
@@ -413,7 +468,18 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 			// draw call
+			cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[0]);
+			cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[0]);
 			for (auto& mesh : scene.elements[0].get()->elements) {
+				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
+					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, static_cast<Mesh*>(mesh.get())->materialResource.Get()->GetGPUVirtualAddress());
+					cmdL.GraphicsCmd()->DrawIndexedInstanced(static_cast<Mesh*>(mesh.get())->mesh.indexCount, 1, static_cast<Mesh*>(mesh.get())->mesh.indexOffset, static_cast<Mesh*>(mesh.get())->mesh.vertexOffset, 0);
+				}
+			}
+			cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[1]);
+			cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[1]);
+			for (auto& mesh : scene.elements[1].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
 					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, static_cast<Mesh*>(mesh.get())->materialResource.Get()->GetGPUVirtualAddress());
@@ -440,8 +506,8 @@ namespace Engine {
 		cmdL.GraphicsCmd()->SetGraphicsRootSignature(defferedPixelPipeline.GetRootSignature());
 		cmdL.GraphicsCmd()->SetPipelineState(defferedPixelPipeline.Get());
 		cmdL.GraphicsCmd()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView);
-		cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView);
+		cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[0]);
+		cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[0]);
 
 		// clear swapchain and depthbuffer bind as output
 		{

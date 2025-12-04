@@ -25,7 +25,7 @@ namespace Engine {
 
 		struct Material {
 
-			DirectX::XMFLOAT4 albedo = { 0.0f, 0.0f, 0.0f, 1.0f };
+			DirectX::XMFLOAT4 albedo = { 1.0f, 0.0f, 0.86f, 1.0f };
 			
 		};
 

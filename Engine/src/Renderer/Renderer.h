@@ -53,10 +53,10 @@ namespace Engine {
 
 		BufferUploader bufferUploader;
 
-		D12Resource vertexBuffer;
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-		D12Resource indexBuffer;
-		D3D12_INDEX_BUFFER_VIEW indexBufferView;
+		D12Resource vertexBuffer[2];
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView[2];
+		D12Resource indexBuffer[2];
+		D3D12_INDEX_BUFFER_VIEW indexBufferView[2];
 
 		std::vector<Render::ObjectData> objectTransformsCPU;
 
