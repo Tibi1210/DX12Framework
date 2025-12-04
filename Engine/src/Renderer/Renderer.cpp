@@ -23,14 +23,9 @@ namespace Engine {
 
 		cmdQ.FlushQuene();
 
-		PRINT_N("---------------------");
 		for (auto& obj : scene.elements) {
-			for (auto& obj2 : obj.get()->elements) {
-				obj2.get()->Release();
-			}
-				obj.get()->Release();
+			obj.get()->Release();
 		}
-		PRINT_N("------------------------------------------");
 		PassDataBuffer.Release();
 
 		depthHeap.Release();
@@ -97,7 +92,7 @@ namespace Engine {
 			{
 				scene.elements.emplace_back(std::make_unique<Object>());
 				static_cast<Object*>(scene.elements[0].get())->name = "Object 1";
-				modelLoader.LoadFBXModels("Models/shapes.fbx", static_cast<Object*>(scene.elements[0].get())->elements);
+				static_cast<Mesh*>(scene.elements[0].get())->Load("Models/shapes.fbx");
 				for (auto& mesh : scene.elements[0].get()->elements) {
 					if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 						static_cast<Mesh*>(mesh.get())->includeInShadowMap = true;

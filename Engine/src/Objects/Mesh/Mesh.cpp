@@ -7,10 +7,17 @@ namespace Engine {
 		Release();
 	}
 
+	void Mesh::Load(const char* path){
+		ModelLoader modelLoader;
+		modelLoader.LoadFBXModels(path, elements);
+	}
+
 	void Mesh::Release(){
-		PRINT_N("MESH RELEASED!");
 		transformResource.Release();
 		materialResource.Release();
+		for (auto& obj : elements) {
+			obj.get()->Release();
+		}
 	}
 
 

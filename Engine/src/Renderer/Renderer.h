@@ -22,8 +22,8 @@
 #include "DX12/Descriptors/D12DescriptorHeap.h"
 #include "DX12/MemoryManagement/BufferUploader.h"
 
-#include "../ModelLoader/ModelLoader.h"
 #include "../Objects/Object.h"
+#include "../Objects/Mesh/Mesh.h"
 
 namespace Engine {
 
@@ -41,8 +41,6 @@ namespace Engine {
 		void Release();
 
 	private:
-
-		ModelLoader modelLoader;
 
 		UINT rWidth, rHeight = 0;
 		D3D12_VIEWPORT viewport[2];

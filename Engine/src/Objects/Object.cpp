@@ -4,6 +4,8 @@
 namespace Engine {
 
 	void Object::Release() {
-		PRINT_N("OBJECT RELEASED!");
+		for (auto& obj : elements) {
+			obj.get()->Release();
+		}
 	}
 }

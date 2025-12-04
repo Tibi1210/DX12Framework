@@ -1,7 +1,8 @@
 #pragma once
 #include "Objects/Object.h"
 #include "Renderer/RendererDataTypes.h"
-#include "../../Renderer/DX12/Resources/D12Resource.h"
+#include "Renderer/DX12/Resources/D12Resource.h"
+#include "ModelLoader/ModelLoader.h"
 
 namespace Engine {
 
@@ -24,6 +25,7 @@ namespace Engine {
 
 		bool includeInShadowMap = false;
 
+		void Load(const char* path);
 
 		void Release() override;
 
