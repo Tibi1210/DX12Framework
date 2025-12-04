@@ -13,6 +13,8 @@ namespace Engine {
 		~Mesh();
 
 		Render::MeshDataRAW mesh;
+		std::vector<Render::Vertex> vertices;
+		std::vector<UINT32> indices;
 
 		Render::Material material;
 		D12Resource materialResource = D12Resource();

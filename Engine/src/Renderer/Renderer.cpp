@@ -23,10 +23,14 @@ namespace Engine {
 
 		cmdQ.FlushQuene();
 
+		PRINT_N("---------------------");
 		for (auto& obj : scene.elements) {
-			obj.get()->Release();
+			for (auto& obj2 : obj.get()->elements) {
+				obj2.get()->Release();
+			}
+				obj.get()->Release();
 		}
-
+		PRINT_N("------------------------------------------");
 		PassDataBuffer.Release();
 
 		depthHeap.Release();
@@ -82,25 +86,31 @@ namespace Engine {
 		
 		// MODEL LOADING
 		{	
-
-			scene.elements.clear();  // Clear destination first
-
+			size_t vertexBufferSize = 0;
+			size_t indexBufferSize = 0;
 			std::vector<Vertex> vertices;
 			std::vector<UINT32> indices;
-			modelLoader.LoadFBXModel("Models/shapes.fbx", vertices, indices, scene.elements);
 
-			scene.elements.emplace_back(std::make_unique<Object>());
+			scene.elements.clear();  // Clear scene
 
-			for (auto& v : scene.elements) {
-				PRINT_N("Type: " << v->id << " Name: " << v->name);
-				//v->Release();  // Calls correct virtual function
+			// FBX 1
+			{
+				scene.elements.emplace_back(std::make_unique<Object>());
+				static_cast<Object*>(scene.elements[0].get())->name = "Object 1";
+				modelLoader.LoadFBXModels("Models/shapes.fbx", static_cast<Object*>(scene.elements[0].get())->elements);
+				for (auto& mesh : scene.elements[0].get()->elements) {
+					if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
+						static_cast<Mesh*>(mesh.get())->includeInShadowMap = true;
+						vertexBufferSize += static_cast<Mesh*>(mesh.get())->mesh.vertexCount * sizeof(Vertex);
+						indexBufferSize += static_cast<Mesh*>(mesh.get())->mesh.indexCount * sizeof(UINT32);
+						vertices.insert(vertices.end(), static_cast<Mesh*>(mesh.get())->vertices.begin(), static_cast<Mesh*>(mesh.get())->vertices.end());
+						indices.insert(indices.end(), static_cast<Mesh*>(mesh.get())->indices.begin(), static_cast<Mesh*>(mesh.get())->indices.end());
+					}
+				}
+				// In Models/shapes.fbx the first mesh is the floor
+				static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[0].get())->includeInShadowMap = false;
 			}
-			static_cast<Mesh*>(scene.elements[1].get())->includeInShadowMap = true;
-			static_cast<Mesh*>(scene.elements[2].get())->includeInShadowMap = true;
 
-
-			size_t vertexBufferSize = vertices.size() * sizeof(Vertex);
-			size_t indexBufferSize = indices.size() * sizeof(UINT32);
 			PRINT_N("vertex size: " << vertexBufferSize);
 			PRINT_N("index size: " << indexBufferSize);
 
@@ -266,11 +276,11 @@ namespace Engine {
 
 		// materials
 		{
-			static_cast<Mesh*>(scene.elements[0].get())->material.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
-			static_cast<Mesh*>(scene.elements[1].get())->material.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
-			static_cast<Mesh*>(scene.elements[2].get())->material.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
+			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[0].get())->material.albedo = { 0.2f, 0.2f, 0.2f, 1.0f };
+			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[1].get())->material.albedo = { 0.5f, 0.0f, 0.0f, 1.0f };
+			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[2].get())->material.albedo = { 0.0f, 0.5f, 0.0f, 1.0f };
 
-			for (auto& mesh : scene.elements) {
+			for (auto& mesh : scene.elements[0].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					static_cast<Mesh*>(mesh.get())->materialResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(Material)), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_COMMON);
 					std::wstring name = L"Material for ";
@@ -293,21 +303,21 @@ namespace Engine {
 			tempData.transform.r[1] = { 0.0f,    1.0f,  0.0f,    0.0f };
 			tempData.transform.r[2] = { 0.0f,    0.0,   1000.0f, 0.0f };
 			tempData.transform.r[3] = { 0.0f,   -1.0f,  0.0f,    1.0f };
-			static_cast<Mesh*>(scene.elements[0].get())->transform = tempData;
+			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[0].get())->transform = tempData;
 			tempData.transform = DirectX::XMMatrixIdentity();
 			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
 			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
 			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
 			tempData.transform.r[3] = { 2.0f, 5.0f, 5.0f, 1.0f }; // xyz pos
-			static_cast<Mesh*>(scene.elements[1].get())->transform = tempData;
+			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[1].get())->transform = tempData;
 			tempData.transform = DirectX::XMMatrixIdentity();
 			tempData.transform.r[0] = { 2.0f, 0.0f, 0.0f, 0.0f }; // x scale
 			tempData.transform.r[1] = { 0.0f, 2.0f, 0.0f, 0.0f }; // y scale
 			tempData.transform.r[2] = { 0.0f, 0.0f, 2.0f, 0.0f }; // z scale
 			tempData.transform.r[3] = { -5.0f, 5.0f, -2.0f, 1.0f }; // xyz pos
-			static_cast<Mesh*>(scene.elements[2].get())->transform = tempData;
+			static_cast<Mesh*>(static_cast<Object*>(scene.elements[0].get())->elements[2].get())->transform = tempData;
 
-			for (auto& mesh : scene.elements) {
+			for (auto& mesh : scene.elements[0].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					static_cast<Mesh*>(mesh.get())->transformResource.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(ObjectData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 					std::wstring name = L"Transform for ";
@@ -369,7 +379,7 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 			// draw call
-			for (auto& mesh : scene.elements) {
+			for (auto& mesh : scene.elements[0].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					if (static_cast<Mesh*>(mesh.get())->includeInShadowMap) {
 						cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
@@ -408,7 +418,7 @@ namespace Engine {
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
 			// draw call
-			for (auto& mesh : scene.elements) {
+			for (auto& mesh : scene.elements[0].get()->elements) {
 				if (dynamic_cast<Mesh*>(mesh.get()) != nullptr) {
 					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, static_cast<Mesh*>(mesh.get())->transformResource.Get()->GetGPUVirtualAddress());
 					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, static_cast<Mesh*>(mesh.get())->materialResource.Get()->GetGPUVirtualAddress());

@@ -8,6 +8,7 @@ namespace Engine {
 	}
 
 	void Mesh::Release(){
+		PRINT_N("MESH RELEASED!");
 		transformResource.Release();
 		materialResource.Release();
 	}

@@ -30,7 +30,7 @@ namespace Engine {
 		return false;
 	}
 
-	void ModelLoader::LoadFBXModel(const char* path, std::vector<Render::Vertex>& outVertices, std::vector<UINT32>& outIndices, std::vector<std::unique_ptr<Object>>& outMeshObjs){
+	void ModelLoader::LoadFBXModels(const char* path, std::vector<std::unique_ptr<Object>>& outMeshObj){
 		FbxManager* manager = FbxManager::Create();
 		FbxIOSettings* settings = FbxIOSettings::Create(manager, IOSROOT);
 		manager->SetIOSettings(settings);
@@ -58,16 +58,13 @@ namespace Engine {
 		for (int geometry = 0; geometry < scene->GetGeometryCount(); geometry++){
 			
 
-			outMeshObjs.emplace_back(std::make_unique<Mesh>());
-			Mesh* lastElement = static_cast<Mesh*>(outMeshObjs.back().get());
+			outMeshObj.emplace_back(std::make_unique<Mesh>());
+			Mesh* lastElement = static_cast<Mesh*>(outMeshObj.back().get());
 			
 			FbxMesh* mesh = static_cast<FbxMesh*>(scene->GetGeometry(geometry));
 
 			lastElement->name = std::string(mesh->GetName());
-			
-			std::vector<Render::Vertex> meshVertices;
-			std::vector<UINT32> meshIndices;
-
+	
 			const int faceCount = mesh->GetPolygonCount();
 			const int ControlPointCount = mesh->GetControlPointsCount();
 			FbxVector4* ControlPoints = mesh->GetControlPoints();
@@ -91,39 +88,37 @@ namespace Engine {
 						vertex.normal = { (float)normalData[0], (float)normalData[1], (float)normalData[2] };
 					}
 
-					const size_t meshVertexCount = meshVertices.size();
+					const size_t meshVertexCount = lastElement->vertices.size();
 					size_t i = 0;
 					for (i = 0; i < meshVertexCount; i++){
-						if (CompareVertex(vertex, meshVertices[i])){
+						if (CompareVertex(vertex, lastElement->vertices[i])){
 							break;
 						}
 					}
 					if (i == meshVertexCount){
-						meshVertices.emplace_back(vertex);
+						lastElement->vertices.emplace_back(vertex);
 					}
-					meshIndices.push_back(i);
+					lastElement->indices.push_back(i);
 					vtx++;
 				}
 				
 			}
 			
-			lastElement->mesh.vertexCount = meshVertices.size();
+			lastElement->mesh.vertexCount = lastElement->vertices.size();
 			lastElement->mesh.vertexOffset = vertexOffset;
-			lastElement->mesh.indexCount = meshIndices.size();
+			lastElement->mesh.indexCount = lastElement->indices.size();
 			lastElement->mesh.indexOffset = indexOffset;
 
 			vertexOffset += lastElement->mesh.vertexCount;
 			indexOffset += lastElement->mesh.indexCount;
 
-			totalMeshVertices.insert(totalMeshVertices.end(), meshVertices.begin(), meshVertices.end());
-			totalMeshIndices.insert(totalMeshIndices.end(), meshIndices.begin(), meshIndices.end());
+			totalMeshVertices.insert(totalMeshVertices.end(), lastElement->vertices.begin(), lastElement->vertices.end());
+			totalMeshIndices.insert(totalMeshIndices.end(), lastElement->indices.begin(), lastElement->indices.end());
 
 
 
 		}
-			outVertices = std::move(totalMeshVertices);
-			outIndices = std::move(totalMeshIndices);
-			PRINT_N("Models loaded!");
+			PRINT_N("Model loaded all meshes!");
 	}
 
 }
