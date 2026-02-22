@@ -26,6 +26,57 @@ namespace Engine {
 				PostQuitMessage(0);
 				break;
 			}
+			case WM_ACTIVATE: {
+				if (LOWORD(wParam) == WA_INACTIVE)
+				{
+					//PRINT_N("INACTIVE");
+				}
+				else
+				{
+					//PRINT_N("ACTIVE");
+				}
+				break;
+			}
+			case WM_ENTERSIZEMOVE: {
+				//PRINT_N("RESIZING");
+				break;
+			}
+			case WM_EXITSIZEMOVE: {
+				//PRINT_N("RESIZED");
+				break;
+			}
+
+			case WM_LBUTTONDOWN:{
+				//PRINT_N("MOUSE LEFT DOWN");
+				break;
+			}
+			case WM_MBUTTONDOWN: {
+				//PRINT_N("MOUSE MIDDLE DOWN");
+				break;
+			}
+			case WM_RBUTTONDOWN: {
+				//PRINT_N("MOUSE RIGHT DOWN");
+				break;
+			}
+			case WM_LBUTTONUP: {
+				//PRINT_N("MOUSE LEFT UP");
+				break;
+			}
+			case WM_MBUTTONUP: {
+				//PRINT_N("MOUSE MIDDLE UP");
+				break;
+			}
+			case WM_RBUTTONUP: {
+				//PRINT_N("MOUSE RIGHT UP");
+				break;
+			}
+			case WM_MOUSEMOVE: {
+				//PRINT_N("MOUSE MOVED");
+				break;
+			}
+
+
+
 		}
 
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -56,6 +107,8 @@ namespace Engine {
 		ShowWindow(mWindowHandle, SW_SHOW);
 		UpdateWindow(mWindowHandle);
 
+		SetWindowText(mWindowHandle, L"DX12 app");
+
 		_isRunning = true;
 		return _isRunning;
 	}
@@ -66,8 +119,6 @@ namespace Engine {
 
 	void Application::Run(){
 
-		float dt = timeSystem.Tick();
-
 		MSG message;
 		while (PeekMessage(&message, 0, 0, 0, PM_REMOVE)){
 			TranslateMessage(&message);
@@ -76,7 +127,13 @@ namespace Engine {
 
 		if (_isRunning)
 		{
-			renderer.UpdateDraw(dt);
+			float dt = timeSystem.Tick();
+			float gameTime = timeSystem.GetTotalTime();
+
+			CalcualteFrameStats(gameTime);
+
+			renderer.Update(dt, gameTime);
+			renderer.Draw();
 		}
 	}
 
@@ -86,6 +143,24 @@ namespace Engine {
 		renderer.Release();
 
 		DXGIDebug::Get().GetLiveObjects();
+
+	}
+	void Application::CalcualteFrameStats(const float gameTime){
+		static int frameCnt = 0;
+		static float timeElapsed = 0.0f;
+		frameCnt++;
+		if ((gameTime - timeElapsed) >= 1.0f)
+		{
+			float fps = (float)frameCnt;
+			float mspf = 1000.0f / fps;
+			std::wstringstream ss;
+			ss << L"DX12 app, Current FPS: " << fps << L", Frame time: " << mspf;
+			std::wstring windowText = ss.str();
+			SetWindowText(mWindowHandle, windowText.c_str());
+			// Reset for next average.
+			frameCnt = 0;
+			timeElapsed += 1.0f;
+		}
 
 	}
 }

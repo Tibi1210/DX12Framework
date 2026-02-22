@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Mesh.h"
+#include "ModelLoader/ModelLoader.h"
 
 namespace Engine {
 
@@ -9,12 +10,10 @@ namespace Engine {
 
 	void Mesh::Load(const char* path){
 		ModelLoader modelLoader;
-		modelLoader.LoadFBXModels(path, elements);
+		modelLoader.LoadFBXModels(path, *this);
 	}
 
 	void Mesh::Release(){
-		transformResource.Release();
-		materialResource.Release();
 		for (auto& obj : elements) {
 			obj.get()->Release();
 		}

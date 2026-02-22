@@ -23,8 +23,7 @@ namespace Engine {
 		void Run();
 		void onDestroy();
 
-
-
+		void CalcualteFrameStats(const float gameTime);
 
 	private:
 		Renderer renderer;

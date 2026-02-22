@@ -15,7 +15,12 @@ struct PS_OUTPUT{
 struct MaterialData{
     float4 albedo;
 };
-ConstantBuffer<MaterialData> globalMaterialData : register(b2);
+//ConstantBuffer<MaterialData> globalMaterialData : register(b2);
+
+cbuffer MaterialBuffer : register(b2)
+{
+    MaterialData materials[6];
+}
 
 PS_OUTPUT main(VS_OUTPUT input)
 {
@@ -23,7 +28,9 @@ PS_OUTPUT main(VS_OUTPUT input)
     
     output.positionWS = input.positionWS;
     output.normalWS = float4(input.normalWS, 1.0f);
-    output.albedo = globalMaterialData.albedo;
+    //output.albedo = globalMaterialData.albedo;
+    // there is no [1] material for floor thats why it is black...
+    output.albedo = materials[0].albedo;
     
     return output;
 }

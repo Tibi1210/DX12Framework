@@ -20,32 +20,32 @@ namespace Engine {
 		ASSERT(size < maxSize);
 		memcpy(internalMemory, pSource, size);
 
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = pDest->Get();
-		barrier.Transition.Subresource = 0;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
-		
-		pCmdL->GraphicsCmd()->ResourceBarrier(1, &barrier);
+		CD3DX12_RESOURCE_BARRIER transitionBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			pDest->Get(),
+			D3D12_RESOURCE_STATE_COMMON,
+			D3D12_RESOURCE_STATE_COPY_DEST);
+		pCmdL->GraphicsCmd()->ResourceBarrier(1, &transitionBarrier);
+
 		pCmdL->GraphicsCmd()->CopyBufferRegion(pDest->Get(), 0, internalBuffer.Get(), 0, size);
 
-		barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = pDest->Get();
-		barrier.Transition.Subresource = 0;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		barrier.Transition.StateAfter = customState;
-		
-		pCmdL->GraphicsCmd()->ResourceBarrier(1, &barrier);
+		transitionBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+			pDest->Get(),
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			customState);
+		pCmdL->GraphicsCmd()->ResourceBarrier(1, &transitionBarrier);
 
 		pCmdL->GraphicsCmd()->Close();
 		pCmdQ->ExecuteCmdList(pCmdL->Get());
 
-		while (pCmdQ->GetFence()->GetCompletedValue() < pCmdQ->M_GetCurrentFence()) {
-			_mm_pause();
+		if (pCmdQ->GetFence()->GetCompletedValue() < pCmdQ->M_GetCurrentFence())
+		{
+			HANDLE eventHandle = CreateEventEx(nullptr, L"FenceCompletedEventHandler", false, EVENT_ALL_ACCESS);
+			EVAL_HRES(pCmdQ->GetFence()->SetEventOnCompletion(pCmdQ->M_GetCurrentFence(), eventHandle), "Error completing fence.");
+			if (eventHandle != nullptr)
+			{
+				WaitForSingleObject(eventHandle, INFINITE);
+				CloseHandle(eventHandle);
+			}
 		}
 
 		pCmdL->ResetCmd();

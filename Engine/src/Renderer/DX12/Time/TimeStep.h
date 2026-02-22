@@ -12,11 +12,12 @@ namespace Engine {
 			TimeStep();
 
 			float Tick();
-
+			float GetTotalTime();
 
 		private:
 
-			std::chrono::steady_clock::time_point time;
+			std::chrono::steady_clock::time_point deltaTime;
+			std::chrono::steady_clock::time_point startTime;
 		};
 	}
 

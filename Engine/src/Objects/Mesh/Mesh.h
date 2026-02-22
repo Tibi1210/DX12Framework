@@ -2,7 +2,7 @@
 #include "Objects/Object.h"
 #include "Renderer/RendererDataTypes.h"
 #include "Renderer/DX12/Resources/D12Resource.h"
-#include "ModelLoader/ModelLoader.h"
+
 
 namespace Engine {
 
@@ -13,17 +13,15 @@ namespace Engine {
 
 		~Mesh();
 
-		Render::MeshDataRAW mesh;
+		size_t vertexBufferSize = 0;
+		size_t indexBufferSize = 0;
 		std::vector<Render::Vertex> vertices;
 		std::vector<UINT32> indices;
 
-		Render::Material material;
-		D12Resource materialResource = D12Resource();
+		std::vector<Render::MeshDataRAW> geometries;
+		std::vector<Render::Material> materials;
+		std::vector<Render::ObjectData> datas;
 
-		Render::ObjectData transform;
-		D12Resource transformResource = D12Resource();
-
-		bool includeInShadowMap = false;
 
 		void Load(const char* path);
 

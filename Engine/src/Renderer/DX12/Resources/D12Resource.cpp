@@ -75,7 +75,7 @@ namespace Engine {
 		resDesc.Width = width;
 		resDesc.Height = height;
 		resDesc.DepthOrArraySize = 1;
-		resDesc.MipLevels = 0;
+		resDesc.MipLevels = 1;
 		resDesc.Format = format;
 		resDesc.SampleDesc = { 1,0 };
 		resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;

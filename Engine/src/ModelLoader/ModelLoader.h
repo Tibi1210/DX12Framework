@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
-#include "../Renderer/RendererDataTypes.h"
-#include "../Objects/Mesh/Mesh.h"
+#include "Renderer/RendererDataTypes.h"
+#include "Objects/Mesh/Mesh.h"
 
 namespace Engine {
 
@@ -11,7 +10,7 @@ namespace Engine {
 	public:
 		ModelLoader() = default;
 
-		void LoadFBXModels(const char* path, std::vector<std::unique_ptr<Object>>& outMeshObj);
+		void LoadFBXModels(const char* path, Mesh& outMeshObj);
 
 	private:
 

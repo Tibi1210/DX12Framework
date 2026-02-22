@@ -20,7 +20,7 @@ namespace Engine {
 			UINT32 indexCount = 0;
 			UINT32 indexOffset = 0;
 
-
+			bool includeInShadowMap = false;
 		};
 
 		struct Material {

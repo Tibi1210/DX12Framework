@@ -35,8 +35,8 @@ namespace Engine {
 
 		void Initialize(HWND hwnd, const UINT width, const UINT height);
 
-		void UpdateDraw(const float dt);
-
+		void Update(const float dt, const float gameTime);
+		void Draw();
 
 		void Release();
 
@@ -57,6 +57,8 @@ namespace Engine {
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView[2];
 		D12Resource indexBuffer[2];
 		D3D12_INDEX_BUFFER_VIEW indexBufferView[2];
+		D12Resource transformResource[2];
+		D12Resource materialResource[2];
 
 		std::vector<Render::ObjectData> objectTransformsCPU;
 
@@ -82,7 +84,6 @@ namespace Engine {
 		std::vector<Render::MeshDataRAW> meshes;
 		
 		Object scene;
-		
 
 	};
 }
