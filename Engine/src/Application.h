@@ -2,7 +2,8 @@
 
 #include "EngineBase.h"
 
-#include <Windows.h>
+#include<Windows.h>
+#include<Windowsx.h>
 
 #include "Renderer/Renderer.h"
 
@@ -25,6 +26,8 @@ namespace Engine {
 
 		void CalcualteFrameStats(const float gameTime);
 
+		void handleMouseMove(const int event, const int x, const int y);
+
 	private:
 		Renderer renderer;
 		Timer::TimeStep timeSystem;
@@ -34,6 +37,7 @@ namespace Engine {
 
 		UINT width = 1280;
 		UINT height = 720;
+
 	};
 
 }

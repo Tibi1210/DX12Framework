@@ -99,7 +99,7 @@ namespace Engine {
 				DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(0.0f)) *
 											 DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(0.0f)) *
 											 DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(0.0f));
-				DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+				DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, -5.0f, 0.0f);
 				DirectX::XMMATRIX transformAll = scale * rotation * translation;
 				for (int i = 0; i < currentMesh->geometries.size(); i++){
 					MeshDataRAW& geom = currentMesh->geometries[i];
@@ -144,7 +144,7 @@ namespace Engine {
 				DirectX::XMMATRIX rotation = DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(-90.0f)) *
 											 DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(0.0f)) *
 											 DirectX::XMMatrixRotationZ(DirectX::XMConvertToRadians(0.0f));
-				DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 5.0f, 0.0f);
+				DirectX::XMMATRIX translation = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
 				DirectX::XMMATRIX transformAll = scale * rotation * translation;
 
 				for (int i = 0; i < currentMesh->geometries.size(); i++) {
@@ -154,7 +154,6 @@ namespace Engine {
 					data.transform = transformAll;
 					Material& material = currentMesh->materials[i];
 					material.albedo = { 0.0f,((float)i + 1) / 10, 0.0f, 1.0f };
-					PRINT_N("MATERIAL x: " << std::to_string(material.albedo.x));
 				}
 				PRINT_N("VERTEX BUFFER SIZE: " << currentMesh->vertexBufferSize);
 				PRINT_N("INDEX BUFFER SIZE: " << currentMesh->indexBufferSize);
@@ -306,9 +305,9 @@ namespace Engine {
 
 		// PassData init
 		{
-			viewMatrix = DirectX::XMMatrixLookAtLH({ -3.0f, 10.0f, -10.0f, 0.0f }, // camera pos
-				{ 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
-				{ 0.0f, 1.0f, 0.0f, 0.0f });
+			viewMatrix = DirectX::XMMatrixLookAtLH({ 0.0f, 0.0f, 10.0f, 0.0f }, // camera pos
+												   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
+												   { 0.0f, 1.0f, 0.0f, 0.0f });
 			viewProjMatrix = viewMatrix * projectionMatrix;
 
 			PassDataBuffer.Initialize(device.Get(), Utils::CalcConstBufferAlignment(sizeof(PassData)), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -376,12 +375,9 @@ namespace Engine {
 		DirectX::XMMATRIX viewLights = DirectX::XMMatrixLookAtLH(lightPos, sceneCenter, { 0.0f, 1.0f, 0.0f, 0.0f });
 		DirectX::XMMATRIX lightProjMatrix = DirectX::XMMatrixOrthographicLH(20, 20, 0.5f, 200.0f);
 
-		viewMatrix = DirectX::XMMatrixLookAtLH({ -4.0f + gameTime, 7.5f, 4.0f, 0.0f }, // camera pos
-			{ 0.0f, 2.0f, 0.0f, 0.0f }, // looking at origin
-			{ 0.0f, 1.0f, 0.0f, 0.0f });
 		viewProjMatrix = viewMatrix * projectionMatrix;
-
 		passData.viewprojmatrix = viewProjMatrix;
+
 		passData.sceneLight = lights[0];
 		passData.lightviewprojmatrix = viewLights * lightProjMatrix;
 
@@ -422,8 +418,6 @@ namespace Engine {
 					cmdL.GraphicsCmd()->DrawIndexedInstanced(geom.indexCount, 1, geom.indexOffset, geom.vertexOffset, 0);
 				}
 			}
-
-
 
 		}
 
@@ -534,5 +528,9 @@ namespace Engine {
 		}
 
 		cmdL.ResetCmd();
+	}
+
+	void Renderer::handleInput(const int event, const int x, const int y){
+		mouseHandler.handleMouseInput(event, x, y);
 	}
 }

@@ -47,36 +47,40 @@ namespace Engine {
 			}
 
 			case WM_LBUTTONDOWN:{
-				//PRINT_N("MOUSE LEFT DOWN");
-				break;
-			}
-			case WM_MBUTTONDOWN: {
-				//PRINT_N("MOUSE MIDDLE DOWN");
-				break;
-			}
-			case WM_RBUTTONDOWN: {
-				//PRINT_N("MOUSE RIGHT DOWN");
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(1, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_LBUTTONUP: {
-				//PRINT_N("MOUSE LEFT UP");
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(-1, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
-			case WM_MBUTTONUP: {
-				//PRINT_N("MOUSE MIDDLE UP");
+			case WM_RBUTTONDOWN: {
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(2, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_RBUTTONUP: {
-				//PRINT_N("MOUSE RIGHT UP");
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(-2, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			}
+			case WM_MBUTTONDOWN: {
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(3, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			}
+			case WM_MBUTTONUP: {
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(-3, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_MOUSEMOVE: {
-				//PRINT_N("MOUSE MOVED");
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->handleMouseMove(0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
-
-
-
 		}
 
 		return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -162,5 +166,9 @@ namespace Engine {
 			timeElapsed += 1.0f;
 		}
 
+	}
+
+	void Application::handleMouseMove(const int event, const int x, const int y){
+		renderer.handleInput(event, x, y);
 	}
 }

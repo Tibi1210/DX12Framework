@@ -25,6 +25,8 @@
 #include "../Objects/Object.h"
 #include "../Objects/Mesh/Mesh.h"
 
+#include "../Input/MouseInputHandler.h"
+
 namespace Engine {
 
 	class RENDER_API Renderer{
@@ -38,9 +40,13 @@ namespace Engine {
 		void Update(const float dt, const float gameTime);
 		void Draw();
 
+		void handleInput(const int event, const int x, const int y);
+
 		void Release();
 
 	private:
+
+		MouseInputHandler mouseHandler;
 
 		UINT rWidth, rHeight = 0;
 		D3D12_VIEWPORT viewport[2];
@@ -75,7 +81,7 @@ namespace Engine {
 
 		D12Resource PassDataBuffer;
 		DirectX::XMMATRIX viewMatrix;
-		DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(1.5708f, 16.0f / 9.0f, 1.0f, 50.0f); //fov 90deg, aspect, near, far;
+		DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(90.0f), 16.0f / 9.0f, 1.0f, 1000.0f); //fov 90deg, aspect, near, far;
 		DirectX::XMMATRIX viewProjMatrix;
 
 		Render::Light lights[8];
