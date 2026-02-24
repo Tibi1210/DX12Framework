@@ -26,7 +26,8 @@ namespace Engine {
 
 		void CalcualteFrameStats(const float gameTime);
 
-		void handleMouseMove(const int event, const int x, const int y);
+		void getRawInput(const int event, const int x, const int y);
+
 
 	private:
 		Renderer renderer;

@@ -87,7 +87,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Input\MouseInputHandler.h" />
+    <ClInclude Include="src\Input\InputHandler.h" />
     <ClInclude Include="src\Objects\Mesh\Mesh.h" />
     <ClInclude Include="src\Objects\Object.h" />
     <ClInclude Include="src\ModelLoader\ModelLoader.h" />
@@ -116,7 +116,7 @@
     <ClInclude Include="src\Renderer\DX12\Time\TimeStep.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Input\MouseInputHandler.cpp" />
+    <ClCompile Include="src\Input\InputHandler.cpp" />
     <ClCompile Include="src\Objects\Mesh\Mesh.cpp" />
     <ClCompile Include="src\Objects\Object.cpp" />
     <ClCompile Include="src\ModelLoader\ModelLoader.cpp" />

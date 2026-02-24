@@ -48,37 +48,47 @@ namespace Engine {
 
 			case WM_LBUTTONDOWN:{
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(1, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_LBUTTONDOWN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_LBUTTONUP: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(-1, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_LBUTTONUP, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_RBUTTONDOWN: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(2, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_RBUTTONDOWN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_RBUTTONUP: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(-2, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_RBUTTONUP, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_MBUTTONDOWN: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(3, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_MBUTTONDOWN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_MBUTTONUP: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(-3, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_MBUTTONUP, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				break;
 			}
 			case WM_MOUSEMOVE: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->handleMouseMove(0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				pointer->getRawInput(WM_MOUSEMOVE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				break;
+			}
+			case WM_KEYDOWN: {
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->getRawInput(WM_KEYDOWN, wParam, -1);
+				break;
+			}
+			case WM_KEYUP: {
+				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				pointer->getRawInput(WM_KEYUP, wParam, -1);
 				break;
 			}
 		}
@@ -168,7 +178,7 @@ namespace Engine {
 
 	}
 
-	void Application::handleMouseMove(const int event, const int x, const int y){
+	void Application::getRawInput(const int event, const int x, const int y){
 		renderer.handleInput(event, x, y);
 	}
 }

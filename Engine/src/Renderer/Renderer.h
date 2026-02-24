@@ -25,7 +25,7 @@
 #include "../Objects/Object.h"
 #include "../Objects/Mesh/Mesh.h"
 
-#include "../Input/MouseInputHandler.h"
+#include "../Input/InputHandler.h"
 
 namespace Engine {
 
@@ -46,7 +46,7 @@ namespace Engine {
 
 	private:
 
-		MouseInputHandler mouseHandler;
+		InputHandler inputHandler;
 
 		UINT rWidth, rHeight = 0;
 		D3D12_VIEWPORT viewport[2];
@@ -90,6 +90,10 @@ namespace Engine {
 		std::vector<Render::MeshDataRAW> meshes;
 		
 		Object scene;
+
+		float asd = 0.0f;
+		float asd1 = 10.0f;
+		float asd2 = 0.0f;
 
 	};
 }

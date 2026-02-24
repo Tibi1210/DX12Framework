@@ -375,6 +375,37 @@ namespace Engine {
 		DirectX::XMMATRIX viewLights = DirectX::XMMatrixLookAtLH(lightPos, sceneCenter, { 0.0f, 1.0f, 0.0f, 0.0f });
 		DirectX::XMMATRIX lightProjMatrix = DirectX::XMMatrixOrthographicLH(20, 20, 0.5f, 200.0f);
 
+		switch (inputHandler.keyValue) {
+			case 65: {
+				asd += 10.0f * dt;
+				break;
+			}
+			case 68: {
+				asd -= 10.0f * dt;
+				break;
+			}
+			case 87: {
+				asd1 -= 10.0f * dt;
+				break;
+			}
+			case 83: {
+				asd1 += 10.0f * dt;
+				break;
+			}
+			case 17: {
+				asd2 -= 10.0f * dt;
+				break;
+			}
+			case 32: {
+				asd2 += 10.0f * dt;
+				break;
+			}
+
+		}
+		viewMatrix = DirectX::XMMatrixLookAtLH({ asd, asd2, asd1, 0.0f }, // camera pos
+											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
+											   { 0.0f, 1.0f, 0.0f, 0.0f });
+
 		viewProjMatrix = viewMatrix * projectionMatrix;
 		passData.viewprojmatrix = viewProjMatrix;
 
@@ -531,6 +562,7 @@ namespace Engine {
 	}
 
 	void Renderer::handleInput(const int event, const int x, const int y){
-		mouseHandler.handleMouseInput(event, x, y);
+		inputHandler.handleInput(event, x, y);
+		//PRINT_N(inputHandler.keyValue);
 	}
 }
