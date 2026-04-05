@@ -80,7 +80,7 @@ namespace Engine {
 			cmdQ.Initialize(device.Get());
 			cmdL.Initialize(device.Get());
 			swapchain.Initialize(device.Get(), factory.Get(), cmdQ.Get(), hwnd, rWidth, rHeight);
-			bufferUploader.Initialize(device.Get(), KBs(1400));
+			bufferUploader.Initialize(device.Get(), KBs(1024));
 		}
 		
 		// MODEL LOADING
