@@ -365,7 +365,7 @@ namespace Engine {
 
 	}
 
-	void Renderer::Update(const float dt, const float gameTime)
+	void Renderer::Update(const float dt, const float gameTime, Engine::InputHandler::State keyboardState)
 	{
 		PassData passData;
 
@@ -375,36 +375,70 @@ namespace Engine {
 		DirectX::XMMATRIX viewLights = DirectX::XMMatrixLookAtLH(lightPos, sceneCenter, { 0.0f, 1.0f, 0.0f, 0.0f });
 		DirectX::XMMATRIX lightProjMatrix = DirectX::XMMatrixOrthographicLH(20, 20, 0.5f, 200.0f);
 
-		switch (inputHandler.keyValue) {
-			case 65: {
-				asd += 10.0f * dt;
-				break;
-			}
-			case 68: {
-				asd -= 10.0f * dt;
-				break;
-			}
-			case 87: {
-				asd1 -= 10.0f * dt;
-				break;
-			}
-			case 83: {
-				asd1 += 10.0f * dt;
-				break;
-			}
-			case 17: {
-				asd2 -= 10.0f * dt;
-				break;
-			}
-			case 32: {
-				asd2 += 10.0f * dt;
-				break;
-			}
 
+		if (keyboardState.IsKeyDown(InputHandler::Keys::W))
+		{
+			player_pos -= 10.0f * dt;
+			PRINT_N("Player pos: " << player_pos);
 		}
-		viewMatrix = DirectX::XMMatrixLookAtLH({ asd, asd2, asd1, 0.0f }, // camera pos
-											   { 0.0f, 0.0f, 0.0f, 0.0f }, // looking at origin
-											   { 0.0f, 1.0f, 0.0f, 0.0f });
+		if (keyboardState.IsKeyDown(InputHandler::Keys::S))
+		{
+			player_pos += 10.0f * dt;
+			PRINT_N("Player pos: " << player_pos);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::A))
+		{
+			player_strafe += 10.0f * dt;
+			PRINT_N("Player strafe: " << player_strafe);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::D))
+		{
+			player_strafe -= 10.0f * dt;
+			PRINT_N("Player strafe: " << player_strafe);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::Q))
+		{
+			player_height += 10.0f * dt;
+			PRINT_N("Player height: " << player_height);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::E))
+		{
+			player_height -= 10.0f * dt;
+			PRINT_N("Player height: " << player_height);
+		}
+
+
+		if (keyboardState.IsKeyDown(InputHandler::Keys::J))
+		{
+			cam_strafe += 10.0f * dt;
+			PRINT_N("Camera strafe: " << cam_strafe);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::L))
+		{
+			cam_strafe -= 10.0f * dt;
+			PRINT_N("Camera strafe: " << cam_strafe);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::I))
+		{
+			cam_height += 10.0f * dt;
+			PRINT_N("Camera height: " << cam_height);
+		}
+		if (keyboardState.IsKeyDown(InputHandler::Keys::K))
+		{
+			cam_height -= 10.0f * dt;
+			PRINT_N("Camera height: " << cam_height);
+		}
+
+		DirectX::XMVECTOR playerPos = { player_strafe, player_height, player_pos, 1.0f };
+		DirectX::XMVECTOR cameraPos = { cam_strafe, cam_height, -1.0, 0.0f };
+
+		DirectX::XMVECTOR target = DirectX::XMVectorAdd(playerPos, cameraPos);
+
+		viewMatrix = DirectX::XMMatrixLookAtLH(
+			playerPos,
+			target,
+			{ 0.0f, 1.0f, 0.0f, 0.0f }
+		);
 
 		viewProjMatrix = viewMatrix * projectionMatrix;
 
@@ -424,7 +458,7 @@ namespace Engine {
 		passData.MATRIX_VP = viewProjMatrix;// DirectX::XMMatrixTranspose(viewProjMatrix);
 		passData.MATRIX_VP_I = DirectX::XMMatrixTranspose(invViewProj);
 
-		passData.EYE_POS = { asd, asd2, asd1 };
+		passData.EYE_POS = { player_pos, player_height, player_strafe };
 		passData.RENDER_TARGET_SIZE = DirectX::XMFLOAT2((float)rWidth, (float)rHeight);
 		passData.RENDER_TARGET_SIZE_I = DirectX::XMFLOAT2(1.0f / rWidth, 1.0f / rHeight);
 
@@ -575,10 +609,5 @@ namespace Engine {
 		}
 
 		cmdL.ResetCmd();
-	}
-
-	void Renderer::handleInput(const int event, const int x, const int y){
-		inputHandler.handleInput(event, x, y);
-		//PRINT_N(inputHandler.keyValue);
 	}
 }

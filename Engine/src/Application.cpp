@@ -45,50 +45,16 @@ namespace Engine {
 				//PRINT_N("RESIZED");
 				break;
 			}
-
-			case WM_LBUTTONDOWN:{
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_LBUTTONDOWN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
-			case WM_LBUTTONUP: {
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_LBUTTONUP, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
-			case WM_RBUTTONDOWN: {
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_RBUTTONDOWN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
-			case WM_RBUTTONUP: {
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_RBUTTONUP, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
-			case WM_MBUTTONDOWN: {
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_MBUTTONDOWN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
-			case WM_MBUTTONUP: {
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_MBUTTONUP, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
-			case WM_MOUSEMOVE: {
-				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_MOUSEMOVE, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-				break;
-			}
 			case WM_KEYDOWN: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_KEYDOWN, wParam, -1);
+				const auto key = static_cast<Engine::InputHandler::Keys>(wParam);
+				pointer->inputHandler.handleInput(key, true);
 				break;
 			}
 			case WM_KEYUP: {
 				Application* pointer = reinterpret_cast<Application*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-				pointer->getRawInput(WM_KEYUP, wParam, -1);
+				const auto key = static_cast<Engine::InputHandler::Keys>(wParam);
+				pointer->inputHandler.handleInput(key, false);
 				break;
 			}
 		}
@@ -146,7 +112,7 @@ namespace Engine {
 
 			CalcualteFrameStats(gameTime);
 
-			renderer.Update(dt, gameTime);
+			renderer.Update(dt, gameTime, inputHandler.keyboardState);
 			renderer.Draw();
 		}
 	}
@@ -159,6 +125,7 @@ namespace Engine {
 		DXGIDebug::Get().GetLiveObjects();
 
 	}
+
 	void Application::CalcualteFrameStats(const float gameTime){
 		static int frameCnt = 0;
 		static float timeElapsed = 0.0f;
@@ -178,7 +145,4 @@ namespace Engine {
 
 	}
 
-	void Application::getRawInput(const int event, const int x, const int y){
-		renderer.handleInput(event, x, y);
-	}
 }

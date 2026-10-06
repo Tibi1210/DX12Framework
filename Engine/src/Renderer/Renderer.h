@@ -37,10 +37,8 @@ namespace Engine {
 
 		void Initialize(HWND hwnd, const UINT width, const UINT height);
 
-		void Update(const float dt, const float gameTime);
+		void Update(const float dt, const float gameTime, Engine::InputHandler::State keyboardState);
 		void Draw();
-
-		void handleInput(const int event, const int x, const int y);
 
 		void Release();
 
@@ -91,9 +89,12 @@ namespace Engine {
 		
 		Object scene;
 
-		float asd = 0.0f;
-		float asd1 = 10.0f;
-		float asd2 = 0.0f;
+		float player_pos = 10.0f;
+		float player_strafe = 0.0f;
+		float player_height = 0.0f;
+
+		float cam_strafe = 0.0f;
+		float cam_height = 0.0f;
 
 	};
 }

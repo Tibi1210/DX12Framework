@@ -8,6 +8,7 @@
 #include "Renderer/Renderer.h"
 
 #include "Renderer/DX12/Time/TimeStep.h"
+#include "Input/InputHandler.h"
 
 namespace Engine {
 
@@ -26,9 +27,7 @@ namespace Engine {
 
 		void CalcualteFrameStats(const float gameTime);
 
-		void getRawInput(const int event, const int x, const int y);
-
-
+		InputHandler inputHandler;
 	private:
 		Renderer renderer;
 		Timer::TimeStep timeSystem;
