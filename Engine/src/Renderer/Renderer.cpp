@@ -407,10 +407,34 @@ namespace Engine {
 											   { 0.0f, 1.0f, 0.0f, 0.0f });
 
 		viewProjMatrix = viewMatrix * projectionMatrix;
-		passData.viewprojmatrix = viewProjMatrix;
 
+
+
+		DirectX::XMVECTOR detView = DirectX::XMMatrixDeterminant(viewMatrix);
+		DirectX::XMMATRIX invView = DirectX::XMMatrixInverse(&detView, viewMatrix);
+		detView = DirectX::XMMatrixDeterminant(projectionMatrix);
+		DirectX::XMMATRIX invProj = DirectX::XMMatrixInverse(&detView, projectionMatrix);
+		detView = DirectX::XMMatrixDeterminant(viewProjMatrix);
+		DirectX::XMMATRIX invViewProj = DirectX::XMMatrixInverse(&detView, viewProjMatrix);
+
+		passData.MATRIX_V = viewMatrix;//DirectX::XMMatrixTranspose(viewMatrix);
+		passData.MATRIX_V_I = DirectX::XMMatrixTranspose(invView);
+		passData.MATRIX_P = projectionMatrix;// DirectX::XMMatrixTranspose(projectionMatrix);
+		passData.MATRIX_P_I = DirectX::XMMatrixTranspose(invProj);
+		passData.MATRIX_VP = viewProjMatrix;// DirectX::XMMatrixTranspose(viewProjMatrix);
+		passData.MATRIX_VP_I = DirectX::XMMatrixTranspose(invViewProj);
+
+		passData.EYE_POS = { asd, asd2, asd1 };
+		passData.RENDER_TARGET_SIZE = DirectX::XMFLOAT2((float)rWidth, (float)rHeight);
+		passData.RENDER_TARGET_SIZE_I = DirectX::XMFLOAT2(1.0f / rWidth, 1.0f / rHeight);
+
+		passData.NEAR_Z = 1.0f;
+		passData.FAR_Z = 1000.0f;
+		passData.TOTAL_TIME = gameTime;
+		passData.DELTA_TIME = dt;
+
+		passData.LIGHT_MATRIX_VP = viewLights * lightProjMatrix;
 		passData.sceneLight = lights[0];
-		passData.lightviewprojmatrix = viewLights * lightProjMatrix;
 
 		memcpy(PassDataBuffer.GetCPUMemory(), &passData, sizeof(PassData));
 
@@ -476,27 +500,19 @@ namespace Engine {
 			}
 			cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(0, PassDataBuffer.Get()->GetGPUVirtualAddress());
 
-			// draw call
+			// draw call(s)
+			for (size_t i = 0; i < 2; i++)
 			{
-				cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[0]);
-				cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[0]);
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, transformResource[0].Get()->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialResource[0].Get()->GetGPUVirtualAddress());
+				{
+					cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[i]);
+					cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[i]);
+					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, transformResource[i].Get()->GetGPUVirtualAddress());
+					cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialResource[i].Get()->GetGPUVirtualAddress());
 
-				Mesh* currentMesh = static_cast<Mesh*>(scene.elements[0].get());
-				for (MeshDataRAW& geom : currentMesh->geometries) {
-					cmdL.GraphicsCmd()->DrawIndexedInstanced(geom.indexCount, 1, geom.indexOffset, geom.vertexOffset, 0);
-				}
-			}
-			{
-				cmdL.GraphicsCmd()->IASetVertexBuffers(0, 1, &vertexBufferView[1]);
-				cmdL.GraphicsCmd()->IASetIndexBuffer(&indexBufferView[1]);
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(1, transformResource[1].Get()->GetGPUVirtualAddress());
-				cmdL.GraphicsCmd()->SetGraphicsRootConstantBufferView(2, materialResource[1].Get()->GetGPUVirtualAddress());
-
-				Mesh* currentMesh = static_cast<Mesh*>(scene.elements[1].get());
-				for (MeshDataRAW& geom : currentMesh->geometries) {
-					cmdL.GraphicsCmd()->DrawIndexedInstanced(geom.indexCount, 1, geom.indexOffset, geom.vertexOffset, 0);
+					Mesh* currentMesh = static_cast<Mesh*>(scene.elements[i].get());
+					for (MeshDataRAW& geom : currentMesh->geometries) {
+						cmdL.GraphicsCmd()->DrawIndexedInstanced(geom.indexCount, 1, geom.indexOffset, geom.vertexOffset, 0);
+					}
 				}
 			}
 

@@ -67,9 +67,9 @@ float4 main(VS_OUTPUT input) : SV_TARGET
     float4 lightObjectPosCS = mul(globalPassData.LIGHT_MATRIX_VP, float4(position, 1.0f));
     float shadowFactor = CalcShadowfactor(lightObjectPosCS);
     
-    float3 lightDir = normalize(globalPassData.light.direction) * -1;
+    float3 lightDir = normalize(globalPassData.sceneLight.direction) * -1;
     float LdotN = dot(lightDir, normalWS.xyz);
 
-    return shadowFactor * color * clamp(LdotN * globalPassData.light.strength, 0.01f, 1.0f);
+    return shadowFactor * color * clamp(LdotN * globalPassData.sceneLight.strength, 0.01f, 1.0f);
     
 }

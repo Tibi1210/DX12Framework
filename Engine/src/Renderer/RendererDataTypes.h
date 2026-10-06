@@ -20,6 +20,8 @@ namespace Engine {
 			UINT32 indexCount = 0;
 			UINT32 indexOffset = 0;
 
+			D3D12_PRIMITIVE_TOPOLOGY primitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
 			bool includeInShadowMap = false;
 		};
 
@@ -39,9 +41,23 @@ namespace Engine {
 		};
 
 		struct PassData {
+			DirectX::XMMATRIX MATRIX_V = DirectX::XMMatrixIdentity();
+			DirectX::XMMATRIX MATRIX_P = DirectX::XMMatrixIdentity();
+			DirectX::XMMATRIX MATRIX_VP = DirectX::XMMatrixIdentity();
+			DirectX::XMMATRIX MATRIX_V_I = DirectX::XMMatrixIdentity();
+			DirectX::XMMATRIX MATRIX_P_I = DirectX::XMMatrixIdentity();
+			DirectX::XMMATRIX MATRIX_VP_I = DirectX::XMMatrixIdentity();
 
-			DirectX::XMMATRIX viewprojmatrix = DirectX::XMMatrixIdentity();
-			DirectX::XMMATRIX lightviewprojmatrix = DirectX::XMMatrixIdentity();
+			DirectX::XMFLOAT3 EYE_POS = { 0.0f, 0.0f, 0.0f };
+			DirectX::XMFLOAT2 RENDER_TARGET_SIZE = { 0.0f, 0.0f };
+			DirectX::XMFLOAT2 RENDER_TARGET_SIZE_I = { 0.0f, 0.0f };
+
+			float NEAR_Z = 0.0f;
+			float FAR_Z = 0.0f;
+			float TOTAL_TIME = 0.0f;
+			float DELTA_TIME = 0.0f;
+
+			DirectX::XMMATRIX LIGHT_MATRIX_VP = DirectX::XMMatrixIdentity();
 			Light sceneLight;
 		};
 
